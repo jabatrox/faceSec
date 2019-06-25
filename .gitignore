@@ -20,10 +20,11 @@
 # javier-soler.jpg
 # pi_face_recognition.py
 # recognize_faces_video.py
-Temp/
-pi-face-recognition/
+.git/
+.gitignore
 .vscode/
 __pycache__/
-.git/
+Temp/
+pi-face-recognition/
 Encodings time for *.png
 haarcascade_frontalface_default.xml
