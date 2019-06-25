@@ -21,7 +21,6 @@
 # pi_face_recognition.py
 # recognize_faces_video.py
 .git/
-.gitignore
 .vscode/
 __pycache__/
 Temp/
