@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link href="../static/style.css" rel="stylesheet" type="text/css">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+    <title>FaceSec - The Facial Recognition Secure Access</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function(){
+            // Connect to the socket server.
+            var socket = io.connect('http://' + document.domain + ':' + location.port);
+            var connect_error_counter = 0;
+            // Receive message from server
+            socket.on('newMessage', function(msg) {
+                console.log("Welcome message = '" +msg.message+ "'");
+                // Update the message to be displayed
+                welcome_message = "<p>" + msg.message.toString() + "</p>"
+                $('#welcome').html(welcome_message);
+                // socket.emit('newMessage');
+            });
+            socket.emit('newMessage');
+            socket.on('connect_error', function(err) {
+                // handle server error here
+                console.log('[WARNING] Error connecting to server');
+                connect_error_counter++;
+
+                if (connect_error_counter == 3) {
+                    console.log('[ERROR] Server unreachable, closing socket...');
+                    socket.disconnect();
+                    console.log('[DONE] Socket closed');
+                }
+            });
+
+        });
+        window.onbeforeunload = function() {
+            websocket.onclose = function () {}; // disable onclose handler first
+            websocket.close();
+        };
+    </script>
+</head>
+
+<body>
+    <div id="heading">
+        <img style="margin: 0px 10px 15px 0px; 
+            height: 5%; width: 5%; vertical-align:middle;" 
+            src="../static/Facial-Recognition.png" alt="Image" class="logo">
+        {% if userType == "admin" %}
+        <span style="font-size: 32pt;">FaceSec's Administrator</span>
+        {% else %}
+        <span style="font-size: 32pt;">Welcome to FaceSec</span>
+        {% endif %}
+    </div>
+    <div id="videoStreaming">
+        <div id="streaming">
+            <h3>Live Video Streaming</h3>
+            <img id="bg" src="{{ url_for('video_feed2') }}">
+        </div>
+
+        <span id="welcome" style="font-size: 18pt;"></span>
+        {% if userType == "admin" %}
+        <span style="font-size: 18pt;">Actions:</span>
+        <form method="post" action="/admin/">
+            <button type="submit" name="forceUpdate">Force encodings update</button><br /><br />
+            <button type="submit" name="startProcess">Start encodings process update</button><br /><br />
+            <button type="submit" name="stopProcess">Stop encodings process update</button><br /><br />
+            <button type="submit" name="quit">Quit</button>
+        </form>
+        {% endif %}
+    </div>
+</body>
+
+</html>

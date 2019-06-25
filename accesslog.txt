@@ -1,0 +1,222 @@
+Access refused on: 2019-06-18 08:24:06.438583 for card ID '111' (card ID not accepted)
+Access refused on: 2019-06-18 08:24:10.035995 for card ID '154' (card ID not accepted)
+Access refused on: 2019-06-18 08:24:31.759964 for card ID '1234' (no face detection)
+Access granted on: 2019-06-18 08:24:52.484497 for card ID '1234'
+Access refused on: 2019-06-19 07:55:06.123885 for card ID '111' (card ID not accepted)
+Access refused on: 2019-06-19 07:55:18.618383 for card ID '1' (card ID not accepted)
+Access refused on: 2019-06-19 07:55:19.873039 for card ID '11' (card ID not accepted)
+Access granted on: 2019-06-19 07:55:30.503593 for card ID '1234'
+Access granted on: 2019-06-19 07:55:44.483697 for card ID '1234'
+Access granted on: 2019-06-19 08:01:32.576788 for card ID '1234'
+Access granted on: 2019-06-19 08:05:07.709946 for card ID '1234'
+Access granted on: 2019-06-19 08:05:25.452069 for card ID '1234'
+Access granted on: 2019-06-19 08:38:05.201622 for card ID '1234'
+Access granted on: 2019-06-19 20:49:31.161997 for card ID '1234'
+Access granted on: 2019-06-19 20:51:06.421220 for card ID '1234'
+Access refused on: 2019-06-20 04:34:50.554213 for card ID '111' (card ID not accepted)
+Access refused on: 2019-06-20 04:35:45.475135 for card ID '1234' (no face detection)
+Access granted on: 2019-06-20 04:36:14.697257 for card ID '1234'
+Access refused on: 2019-06-20 05:22:40.141010 for card ID '111' (card ID not accepted)
+Access refused on: 2019-06-20 05:22:49.892526 for card ID '143' (card ID not accepted)
+Access granted on: 2019-06-20 05:23:02.640773 for card ID '1234'
+Access refused on: 2019-06-20 08:06:12.682742 for card ID '111' (card ID not accepted)
+Access refused on: 2019-06-20 08:06:39.247423 for card ID '123' (card ID not accepted)
+Access refused on: 2019-06-20 08:08:27.459421 for card ID '111' (card ID not accepted)
+Access refused on: 2019-06-20 08:08:40.522621 for card ID '123' (card ID not accepted)
+Access refused on: 2019-06-20 08:08:58.284453 for card ID '11' (card ID not accepted)
+Access refused on: 2019-06-20 08:28:52.556828 for card ID '111' (card ID not accepted)
+Access refused on: 2019-06-20 08:30:59.103338 for card ID '111' (card ID not accepted)
+Access refused on: 2019-06-20 08:31:03.594752 for card ID '112' (card ID not accepted)
+Access refused on: 2019-06-20 08:36:41.481693 for card ID '1111111111' (card ID not accepted)
+Access refused on: 2019-06-20 08:36:56.431893 for card ID '1111' (card ID not accepted)
+Access refused on: 2019-06-20 08:55:12.138235 for card ID '111' (card ID not accepted)
+Access refused on: 2019-06-20 08:55:45.033040 for card ID '111' (card ID not accepted)
+Access refused on: 2019-06-20 08:55:46.571922 for card ID '123' (card ID not accepted)
+Access refused on: 2019-06-20 08:56:46.848080 for card ID '123' (card ID not accepted)
+Access refused on: 2019-06-20 08:57:49.296376 for card ID '123' (card ID not accepted)
+Access refused on: 2019-06-20 08:59:43.949750 for card ID '1111111' (card ID not accepted)
+Access refused on: 2019-06-20 14:37:30.533117 for card ID '111' (card ID not accepted)
+Access granted on: 2019-06-20 14:38:04.475987 for card ID '1234'
+Access refused on: 2019-06-20 14:39:03.032431 for card ID '1234' (no face detection)
+Access granted on: 2019-06-20 14:39:59.858676 for card ID '1234'
+Access refused on: 2019-06-20 15:18:36.861475 for card ID '111' (card ID not accepted)
+Access granted on: 2019-06-20 15:22:43.235311 for card ID '1234'
+Access granted on: 2019-06-20 15:22:54.109589 for card ID '1234'
+Access refused on: 2019-06-20 15:25:05.445310 for card ID '1234' (no face detection)
+Access refused on: 2019-06-20 15:25:59.807485 for card ID '1234' (no face detection)
+Access refused on: 2019-06-20 15:27:18.223232 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-20 15:27:18.457607 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-20 15:27:28.703054 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-20 15:27:29.121318 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-20 15:28:41.096782 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-21 08:09:09.927389 for card ID '111' (card ID not accepted)
+Access refused on: 2019-06-21 08:13:11.438097 for card ID '11124' (card ID not accepted)
+Access granted on: 2019-06-21 08:13:13.954611 for card ID '1234'
+Access refused on: 2019-06-21 08:14:54.405013 for card ID '114124' (card ID not accepted)
+Access granted on: 2019-06-21 08:15:05.490464 for card ID '1234'
+Access refused on: 2019-06-21 08:15:07.842887 for card ID '111' (card ID not accepted)
+Access granted on: 2019-06-21 08:15:20.329788 for card ID '1234'
+Access granted on: 2019-06-21 08:16:21.897617 for card ID '1234'
+Access granted on: 2019-06-21 08:21:02.092906 for card ID '1234'
+Access refused on: 2019-06-22 21:27:51.696772 for card ID '1' (card ID not accepted)
+Access granted on: 2019-06-22 21:33:11.242322 for card ID '1234'
+Access granted on: 2019-06-22 21:33:36.400220 for card ID '1234'
+Access refused on: 2019-06-22 21:36:01.072795 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-22 21:36:02.135982 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-22 21:38:09.454661 for card ID 'C:/ProgramData/Miniconda3/Scripts/activate' (card ID not accepted)
+Access refused on: 2019-06-22 21:38:09.456656 for card ID 'conda activate base' (card ID not accepted)
+Access granted on: 2019-06-24 00:32:29.235926 for card ID '1234'
+Access granted on: 2019-06-24 01:10:41.061077 for card ID '1234'
+Access granted on: 2019-06-24 01:26:43.345257 for card ID '1234'
+Access granted on: 2019-06-24 01:31:18.458797 for card ID '1234'
+Access refused on: 2019-06-24 01:37:00.472930 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 01:37:00.473927 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 01:37:00.474924 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 01:37:00.477917 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 01:37:00.482904 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 01:37:00.484898 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 01:37:00.486892 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 01:37:00.487889 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 01:37:00.489885 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 01:46:56.452924 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 01:46:56.762097 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 01:46:56.855847 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 01:46:56.857841 for card ID 'RECON = True' (card ID not accepted)
+Access refused on: 2019-06-24 01:46:56.858839 for card ID 'RECON = True' (card ID not accepted)
+Access granted on: 2019-06-24 02:26:12.242649 for card ID '1234'
+Access refused on: 2019-06-24 02:28:01.829924 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 02:28:01.830921 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 02:28:01.832919 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 02:28:01.833914 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 02:28:01.834911 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 02:28:01.835909 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 02:28:01.837903 for card ID '' (card ID not accepted)
+Access granted on: 2019-06-24 02:31:18.786657 for card ID '1234'
+Access granted on: 2019-06-24 02:36:36.193864 for card ID '1234'
+Access refused on: 2019-06-24 02:58:25.965064 for card ID '111' (card ID not accepted)
+Access granted on: 2019-06-24 02:58:54.178273 for card ID '1234'
+Access refused on: 2019-06-24 02:59:10.248883 for card ID '111' (card ID not accepted)
+Access refused on: 2019-06-24 02:59:11.226267 for card ID '11' (card ID not accepted)
+Access granted on: 2019-06-24 02:59:20.642827 for card ID '1234'
+Access granted on: 2019-06-24 03:58:27.904186 for card ID '1234'
+Access granted on: 2019-06-24 03:58:42.527425 for card ID '1234'
+Access refused on: 2019-06-24 06:12:09.638064 for card ID '111' (card ID not accepted)
+Access refused on: 2019-06-24 06:12:34.679254 for card ID '1' (card ID not accepted)
+Access refused on: 2019-06-24 06:12:38.555848 for card ID '111' (card ID not accepted)
+Access granted on: 2019-06-24 06:12:50.438823 for card ID '1234'
+Access refused on: 2019-06-24 06:13:14.710985 for card ID '111' (card ID not accepted)
+Access granted on: 2019-06-24 06:13:25.643745 for card ID '1234'
+Access refused on: 2019-06-24 06:20:42.994821 for card ID '11' (card ID not accepted)
+Access refused on: 2019-06-24 06:38:35.717969 for card ID '11' (card ID not accepted)
+Access granted on: 2019-06-24 06:38:52.643026 for card ID '1234'
+Access refused on: 2019-06-24 08:47:42.741411 for card ID '11' (card ID not accepted)
+Access refused on: 2019-06-24 08:55:00.791641 for card ID '11' (card ID not accepted)
+Access refused on: 2019-06-24 08:55:58.338099 for card ID '123' (card ID not accepted)
+Access refused on: 2019-06-24 09:28:09.579733 for card ID '11' (card ID not accepted)
+Access refused on: 2019-06-24 09:28:27.087960 for card ID '123' (card ID not accepted)
+Access refused on: 2019-06-24 09:56:21.964523 for card ID '11' (card ID not accepted)
+Access refused on: 2019-06-24 10:09:33.334181 for card ID '11' (card ID not accepted)
+Access refused on: 2019-06-24 10:10:20.463977 for card ID '123' (card ID not accepted)
+Access refused on: 2019-06-24 10:14:07.628205 for card ID '1' (card ID not accepted)
+Access refused on: 2019-06-24 10:14:20.888776 for card ID '123' (card ID not accepted)
+Access granted on: 2019-06-24 10:14:30.510558 for card ID '1234'
+Access refused on: 2019-06-24 10:16:55.724447 for card ID '1' (card ID not accepted)
+Access refused on: 2019-06-24 10:17:00.693175 for card ID '1' (card ID not accepted)
+Access refused on: 2019-06-24 10:17:01.782263 for card ID '1' (card ID not accepted)
+Access refused on: 2019-06-24 10:21:07.841266 for card ID '1' (card ID not accepted)
+Access refused on: 2019-06-24 10:21:13.354273 for card ID '1' (card ID not accepted)
+Access refused on: 2019-06-24 10:24:35.984960 for card ID '1' (card ID not accepted)
+Access refused on: 2019-06-24 10:24:49.648879 for card ID '1' (card ID not accepted)
+Access refused on: 2019-06-24 10:43:11.936809 for card ID '1' (card ID not accepted)
+Access refused on: 2019-06-24 10:43:58.404176 for card ID '1' (card ID not accepted)
+Access refused on: 2019-06-24 10:51:08.665768 for card ID '1' (card ID not accepted)
+Access refused on: 2019-06-24 10:51:15.213771 for card ID '12' (card ID not accepted)
+Access refused on: 2019-06-24 10:51:22.852451 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 11:23:13.089928 for card ID '1' (card ID not accepted)
+Access refused on: 2019-06-24 11:23:18.146496 for card ID '1' (card ID not accepted)
+Access refused on: 2019-06-24 11:23:43.132670 for card ID '1' (card ID not accepted)
+Access refused on: 2019-06-24 11:35:21.614634 for card ID '1' (card ID not accepted)
+Access refused on: 2019-06-24 11:45:50.711052 for card ID '1' (card ID not accepted)
+Access refused on: 2019-06-24 11:45:55.680760 for card ID '123' (card ID not accepted)
+Access granted on: 2019-06-24 11:46:07.946283 for card ID '1234'
+Access refused on: 2019-06-24 12:02:12.852905 for card ID '1' (card ID not accepted)
+Access refused on: 2019-06-24 12:02:16.048070 for card ID '123' (card ID not accepted)
+Access granted on: 2019-06-24 12:02:27.148919 for card ID '1234'
+Access granted on: 2019-06-24 12:03:46.088572 for card ID '1234'
+Access refused on: 2019-06-24 12:03:51.263131 for card ID '1' (card ID not accepted)
+Access granted on: 2019-06-24 12:04:02.107051 for card ID '1234'
+Access refused on: 2019-06-24 12:09:21.846332 for card ID '1' (card ID not accepted)
+Access granted on: 2019-06-24 12:09:32.596050 for card ID '1234'
+Access granted on: 2019-06-24 12:23:14.943785 for card ID '1234'
+Access granted on: 2019-06-24 12:31:09.968665 for card ID '1234'
+Access granted on: 2019-06-24 12:56:52.019568 for card ID '1234'
+Access granted on: 2019-06-24 13:00:49.425085 for card ID '1234'
+Access refused on: 2019-06-24 13:07:19.866830 for card ID '1' (card ID not accepted)
+Access refused on: 2019-06-24 13:07:21.890941 for card ID '1' (card ID not accepted)
+Access refused on: 2019-06-24 13:07:23.719570 for card ID '1' (card ID not accepted)
+Access granted on: 2019-06-24 13:07:33.759190 for card ID '1234'
+Access refused on: 2019-06-24 13:10:42.903634 for card ID '1' (card ID not accepted)
+Access refused on: 2019-06-24 13:10:45.097322 for card ID '12' (card ID not accepted)
+Access refused on: 2019-06-24 13:14:42.295317 for card ID '1' (card ID not accepted)
+Access granted on: 2019-06-24 13:14:56.183227 for card ID '1234'
+Access granted on: 2019-06-24 13:15:14.730969 for card ID '5678'
+Access refused on: 2019-06-24 13:16:04.584861 for card ID '1' (card ID not accepted)
+Access granted on: 2019-06-24 13:16:14.146380 for card ID '1234'
+Access refused on: 2019-06-24 13:16:59.602758 for card ID '111' (card ID not accepted)
+Access granted on: 2019-06-24 13:17:09.490182 for card ID '1234'
+Access granted on: 2019-06-24 13:23:02.609454 for card ID '1234'
+Access granted on: 2019-06-24 13:25:00.251161 for card ID '1234'
+Access granted on: 2019-06-24 13:30:10.287582 for card ID '1234'
+Access granted on: 2019-06-24 13:30:27.459230 for card ID '1234'
+Access refused on: 2019-06-24 13:30:44.302476 for card ID '' (card ID not accepted)
+Access granted on: 2019-06-24 13:31:15.883646 for card ID '1234'
+Access granted on: 2019-06-24 13:32:40.106818 for card ID '1234'
+Access granted on: 2019-06-24 13:32:52.883613 for card ID '1234'
+Access granted on: 2019-06-24 13:47:28.911427 for card ID '1234'
+Access granted on: 2019-06-24 13:47:49.677252 for card ID '1234'
+Access granted on: 2019-06-24 13:48:08.692188 for card ID '1234'
+Access granted on: 2019-06-24 13:50:52.391389 for card ID '1234'
+Access granted on: 2019-06-24 13:51:35.454168 for card ID '1234'
+Access granted on: 2019-06-24 13:52:00.848556 for card ID '1234'
+Access granted on: 2019-06-24 13:52:19.155120 for card ID '1234'
+Access refused on: 2019-06-24 13:52:33.142218 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 13:52:33.643875 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 13:52:33.681774 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 13:52:33.713690 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 13:52:33.741620 for card ID '' (card ID not accepted)
+Access granted on: 2019-06-24 13:53:09.264173 for card ID '1234'
+Access refused on: 2019-06-24 13:53:13.608791 for card ID '123' (card ID not accepted)
+Access granted on: 2019-06-24 13:53:29.959072 for card ID '1234'
+Access refused on: 2019-06-24 13:54:10.312145 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 13:54:10.969386 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-24 21:48:03.300555 for card ID '111' (card ID not accepted)
+Access granted on: 2019-06-24 21:48:21.624051 for card ID '1234'
+Access granted on: 2019-06-24 23:56:47.396876 for card ID '1234'
+Access granted on: 2019-06-25 01:25:41.949055 for card ID '1234'
+Access granted on: 2019-06-25 01:29:00.636135 for card ID '1234'
+Access granted on: 2019-06-25 01:29:19.612533 for card ID '1234'
+Access granted on: 2019-06-25 01:31:54.327844 for card ID '1234'
+Access granted on: 2019-06-25 01:32:15.415800 for card ID '1234'
+Access granted on: 2019-06-25 01:32:39.166977 for card ID '1234'
+Access granted on: 2019-06-25 01:42:30.292172 for card ID '1234'
+Access granted on: 2019-06-25 01:42:51.410935 for card ID '1234'
+Access granted on: 2019-06-25 01:51:38.788459 for card ID '1234'
+Access granted on: 2019-06-25 01:52:57.957901 for card ID '1234'
+Access granted on: 2019-06-25 01:59:43.412857 for card ID '1234'
+Access granted on: 2019-06-25 02:00:25.084050 for card ID '1234'
+Access granted on: 2019-06-25 02:02:39.216147 for card ID '1234'
+Access granted on: 2019-06-25 02:45:37.456560 for card ID '1234'
+Access granted on: 2019-06-25 02:46:38.039434 for card ID '1234'
+Access granted on: 2019-06-25 02:48:05.617411 for card ID '1234'
+Access granted on: 2019-06-25 02:48:19.167118 for card ID '1234'
+Access refused on: 2019-06-25 02:49:01.452496 for card ID '1234' (no face detection)
+Access granted on: 2019-06-25 02:49:28.770914 for card ID '1234'
+Access refused on: 2019-06-25 03:30:53.369612 for card ID '1234' (no face detection)
+Access refused on: 2019-06-25 03:31:48.530062 for card ID '1234' (no face detection)
+Access granted on: 2019-06-25 03:34:14.367941 for card ID '1234'
+Access granted on: 2019-06-25 03:34:46.330066 for card ID '1234'
+Access granted on: 2019-06-25 03:38:41.905881 for card ID '1234'
+Access refused on: 2019-06-25 03:39:16.835179 for card ID '1234' (no face detection)
+Access granted on: 2019-06-25 03:45:44.243108 for card ID '1234'
+Access granted on: 2019-06-25 04:09:03.677783 for card ID '1234'
+Access granted on: 2019-06-25 04:09:14.313846 for card ID '1234'
