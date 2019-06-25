@@ -333,13 +333,13 @@ def video_feed2():
     return Response(gen(videoCamera),
         mimetype='multipart/x-mixed-replace; boundary=frame')
     # else:
-        # return send_file("Facial-Recognition.png", mimetype='image/png', cache_timeout=0)
+        # return send_file("static/Facial-Recognition.png", mimetype='image/png', cache_timeout=0)
 
 # @app.route('/logo.png')
 # def video_stream():
 #     """The logo of the website"""
 #     # img = get_main_image()
-#     return send_file("Facial-Recognition.png")#, cache_timeout=0)
+#     return send_file("static/Facial-Recognition.png")#, cache_timeout=0)
 
 # @app.route("/members/<string:name>/")
 # def getMember(name):
@@ -380,7 +380,7 @@ if __name__ == "__main__":
         #     # Start/stop the encodings update process when `n` or `m` keys
         #     # are pressed, force encodings update with `f` key and exit the
         #     # program with the `q` key
-        #     cv2.imshow('img',cv2.imread('Facial-Recognition.png'))
+        #     cv2.imshow('img',cv2.imread('static/Facial-Recognition.png'))
         #     key = cv2.waitKey(0)
         #     if key == ord("q"):    # Esc key to stop
         #         if encodings_process.is_alive():
