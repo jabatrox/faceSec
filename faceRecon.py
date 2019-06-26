@@ -266,8 +266,10 @@ def accessControl():
     return granted
 
 ############################################################################
+############################################################################
 ############################### MAIN PROGRAM ###############################
 ################## ONLY FOR RUNNING AS INDEPENDANT SCRIPT ##################
+############################################################################
 ############################################################################
 
 def main(encodings, display, detection_method):
@@ -475,6 +477,8 @@ def argParser():
 
 
 if __name__ == "__main__":
+    # Call the argument parser function
     argParser()
+    
     # Call the 'main' function with the parsed arguments
     main(args["encodings"], args["display"], args["detection_method"])

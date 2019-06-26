@@ -263,7 +263,7 @@ def index():
 
 @app.route("/admin/", methods=['GET', 'POST'])
 def admin():
-    message = {'msg': 'Hello Admin!'}
+    # message = {'msg': 'Hello Admin!'}
     global encodings_process
     if request.method == 'POST':
         if "forceUpdate" in request.form:
@@ -296,7 +296,7 @@ def admin():
             return 'Server shutting down...'
     elif request.method == 'GET':
         print("[INFO] admin website loaded")
-    return render_template('index.html', message=message, userType="admin")
+    return render_template('index.html', userType="admin")#message=message, userType="admin")
 
 
 @socketio.on('newMessage')
@@ -333,13 +333,32 @@ def video_feed2():
     return Response(gen(videoCamera),
         mimetype='multipart/x-mixed-replace; boundary=frame')
     # else:
-        # return send_file("static/Facial-Recognition.png", mimetype='image/png', cache_timeout=0)
+        # return send_file("static/img/Facial-Recognition.png", mimetype='image/png', cache_timeout=0)
+
+
+@app.after_request
+def add_header(r):
+    """
+    Add headers to both force latest IE rendering engine or Chrome Frame,
+    and also to cache the rendered page for 10 minutes.
+    """
+    r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    r.headers["Pragma"] = "no-cache"
+    r.headers["Expires"] = "0"
+    r.headers['Cache-Control'] = 'public, max-age=0'
+    return r
+
+# @app.route('/post', methods = ["POST"])
+# def post():
+ 
+#     print(request.data)
+#     return ''
 
 # @app.route('/logo.png')
 # def video_stream():
 #     """The logo of the website"""
 #     # img = get_main_image()
-#     return send_file("static/Facial-Recognition.png")#, cache_timeout=0)
+#     return send_file("static/img/Facial-Recognition.png")#, cache_timeout=0)
 
 # @app.route("/members/<string:name>/")
 # def getMember(name):
@@ -371,7 +390,7 @@ if __name__ == "__main__":
         onFirstRun = False
         
         # app.run(host='0.0.0.0', port=3000)#, debug=True)
-        socketio.run(app, host='0.0.0.0', port=3000)
+        socketio.run(app, host='0.0.0.0', port=3000)#, debug=True)
         # flask_thread = threading.Thread(target=flask_thread)
         # flask_thread.setDaemon(True)
         # flask_thread.start()
@@ -380,7 +399,7 @@ if __name__ == "__main__":
         #     # Start/stop the encodings update process when `n` or `m` keys
         #     # are pressed, force encodings update with `f` key and exit the
         #     # program with the `q` key
-        #     cv2.imshow('img',cv2.imread('static/Facial-Recognition.png'))
+        #     cv2.imshow('img',cv2.imread('static/img/Facial-Recognition.png'))
         #     key = cv2.waitKey(0)
         #     if key == ord("q"):    # Esc key to stop
         #         if encodings_process.is_alive():

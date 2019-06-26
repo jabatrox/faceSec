@@ -3,31 +3,35 @@
 
 <head>
     <meta charset="UTF-8">
-    <link href="../static/style.css" rel="stylesheet" type="text/css">
-    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+    <!-- <link href="../static/style.css" rel="stylesheet" type="text/css"> -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/style.css') }}">
     <title>FaceSec - The Facial Recognition Secure Access</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
 
     <script type="text/javascript">
         $(document).ready(function(){
-            // Connect to the socket server.
-            var socket = io.connect('http://' + document.domain + ':' + location.port);
-            var connect_error_counter = 0;
+            // Display the default welcome message on page load
             window.onload = function(){
                 $('#welcome').html("<p>Waiting for user...</p>");
             };
-            // Receive message from server
+
+            // Connect to the socket server
+            var socket = io.connect('http://' + document.domain + ':' + location.port);
+            var connect_error_counter = 0;
+            // Receive new welcome message from server
             socket.on('newMessage', function(msg) {
                 console.log("Welcome message = '" +msg.message+ "'");
-                // Update the message to be displayed
+                // Update the welcome message to be displayed
                 welcome_message = "<p>" + msg.message.toString() + "</p>"
                 $('#welcome').html(welcome_message);
                 // socket.emit('newMessage');
             });
             socket.emit('newMessage');
             socket.on('connect_error', function(err) {
-                // handle server error here
+                // If there are 3 connection errors to the server, close the
+                // socket
                 console.log('[WARNING] Error connecting to server');
                 connect_error_counter++;
 
@@ -39,41 +43,46 @@
             });
 
         });
-        window.onbeforeunload = function() {
-            websocket.onclose = function () {}; // disable onclose handler first
-            websocket.close();
-        };
+        // window.onbeforeunload = function() {
+        //     websocket.onclose = function () {}; // disable onclose handler first
+        //     websocket.close();
+        // };
     </script>
 </head>
 
 <body>
     <div id="heading">
-        <img style="margin: 0px 10px 15px 0px; 
+        <!-- <img style="margin: 0px 10px 15px 0px; 
             height: 5%; width: 5%; vertical-align:middle;" 
-            src="../static/Facial-Recognition.png" alt="Image" class="logo">
+            src="{{ url_for('static', filename='img/Facial-Recognition.png') }}"
+            alt="Image" class="logo"> -->
+        <img id="logo"
+            src="{{ url_for('static', filename='img/Facial-Recognition.png') }}"
+            alt="Image" class="logo">
         {% if userType == "admin" %}
-        <span style="font-size: 32pt;">FaceSec's Administrator</span>
+        <span>FaceSec's Administrator</span>
         {% else %}
-        <span style="font-size: 32pt;">Welcome to FaceSec</span>
+        <span>Welcome to FaceSec</span>
         {% endif %}
     </div>
-    <div id="videoStreaming">
-        <div id="streaming">
-            <h3>Live Video Streaming</h3>
-            <img id="bg" src="{{ url_for('video_feed2') }}">
+    <div id="adminPanel">
+        <h3>Live Video Streaming</h3>
+        <div>
+            <img id="videofeed" src="{{ url_for('video_feed2') }}" alt="Video streaming should be here">
+            {% if userType == "admin" %}
+            <div id="actions">
+                <span>ADMINISTRATOR ACTIONS:</span>
+                <form method="post" action="/admin/">
+                    <button class="btn" type="submit" name="forceUpdate">Force encodings update</button><br /><br />
+                    <button class="btn" type="submit" name="startProcess">Start encodings process update</button><br /><br />
+                    <button class="btn" type="submit" name="stopProcess">Stop encodings process update</button><br /><br />
+                    <button class="btn" type="submit" name="quit">Quit</button>
+                </form>
+            </div>
+        {% endif %}
         </div>
-
-        <span id="welcome" style="font-size: 18pt;"></span>
-        {% if userType == "admin" %}
-        <span style="font-size: 18pt;">Actions:</span>
-        <form method="post" action="/admin/">
-            <button type="submit" name="forceUpdate">Force encodings update</button><br /><br />
-            <button type="submit" name="startProcess">Start encodings process update</button><br /><br />
-            <button type="submit" name="stopProcess">Stop encodings process update</button><br /><br />
-            <button type="submit" name="quit">Quit</button>
-        </form>
-        {% endif %}
     </div>
+    <span id="welcome"></span>
 </body>
 
 </html>
