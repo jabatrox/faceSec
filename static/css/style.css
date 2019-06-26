@@ -65,10 +65,21 @@ body
 {
     margin-top: 15px;
     /* font-size: 2pt; */
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 15px;
+    grid-auto-rows: minmax(50px, auto);
 }
 
+/*  Alternative style for admin buttons: all in one column, one after the other
+#actions > form
+{
+    margin-top: 15px;
+    font-size: 2pt;
+} */
+
 button.btn {
-    width: 21em;
+    /* width: 21em; */
 	-moz-box-shadow:inset 0px 1px 0px 0px #ffffff;
 	-webkit-box-shadow:inset 0px 1px 0px 0px #ffffff;
 	box-shadow:inset 0px 1px 0px 0px #ffffff;

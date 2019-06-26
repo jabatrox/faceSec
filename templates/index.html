@@ -37,11 +37,18 @@
             <div id="actions">
                 <span>ADMINISTRATOR ACTIONS:</span>
                 <form method="post" action="/admin/">
-                    <button class="btn" type="submit" name="forceUpdate">Force encodings update</button><br /><br />
-                    <button class="btn" type="submit" name="startProcess">Start encodings process update</button><br /><br />
-                    <button class="btn" type="submit" name="stopProcess">Stop encodings process update</button><br /><br />
+                    <button class="btn" type="submit" name="startProcess">Start encodings<br>update process</button>
+                    <button class="btn" type="submit" name="forceUpdate">Force encodings<br>update</button>
+                    <button class="btn" type="submit" name="stopProcess">Stop encodings<br>update process</button>
                     <button class="btn" type="submit" name="quit">Quit</button>
                 </form>
+                <!-- Alternative style for admin buttons: all in one column, one after the other
+                    <form method="post" action="/admin/">
+                    <button class="btn" type="submit" name="forceUpdate">Force encodings update</button><br /><br />
+                    <button class="btn" type="submit" name="startProcess">Start encodings update process</button><br /><br />
+                    <button class="btn" type="submit" name="stopProcess">Stop encodings update process</button><br /><br />
+                    <button class="btn" type="submit" name="quit">Quit</button>
+                </form> -->
             </div>
         {% endif %}
         </div>
