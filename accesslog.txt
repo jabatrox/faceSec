@@ -245,3 +245,17 @@ Access refused on: 2019-06-27 03:24:53.568901 for card ID '1234' (no face detect
 Access granted on: 2019-06-27 03:25:18.083326 for card ID '1234'
 Access granted on: 2019-06-27 03:26:15.516372 for card ID '1234'
 Access refused on: 2019-06-27 03:41:51.464260 for card ID '1234' (no face detection)
+Access refused on: 2019-06-27 13:14:32.640789 for card ID '123' (card ID not accepted)
+Access refused on: 2019-06-27 13:19:10.048182 for card ID '122' (card ID not accepted)
+Access refused on: 2019-06-27 13:19:56.191833 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-27 13:19:56.671616 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-27 13:19:56.815083 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-27 13:19:56.959724 for card ID '' (card ID not accepted)
+Access refused on: 2019-06-27 13:19:57.119699 for card ID '' (card ID not accepted)
+Access granted on: 2019-06-27 13:20:15.189625 for card ID '1234'
+Access granted on: 2019-06-27 13:22:29.085815 for card ID '1234'
+Access refused on: 2019-06-27 13:24:37.006436 for card ID '11' (card ID not accepted)
+Access granted on: 2019-06-27 13:24:47.507383 for card ID '1234'
+Access refused on: 2019-06-27 13:25:07.631480 for card ID '1234' (no face detection)
+Access granted on: 2019-06-27 13:25:27.144774 for card ID '1234'
+Access refused on: 2019-06-27 13:25:51.024692 for card ID '1234' (no face detection)

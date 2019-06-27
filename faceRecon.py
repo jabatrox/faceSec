@@ -40,6 +40,10 @@ import imutils
 pathToUnknown = "images/unknown_people/"
 known_count = {}        # Dictionnary to count the number of times each known
                         # subject recognized is detected
+known_count_max = 15    # Number of times a subject must be recogised
+                            # before granting access
+if detection_method == "cnn":
+    known_count_max = 7
 unknown_count = 0       # Number of times an unknown subject is detected
 unknown_count_max = 15  # Max number of pictures taken of an unknown subject
 granted = []            # List of subject with granted access
@@ -143,7 +147,6 @@ class VideoCamera(object):
             # Try to match each face in the input image to our known encodings
             matches = face_recognition.compare_faces(self.known_encodings["encodings"],
                 encoding, tolerance=0.55)
-            index_match = [k for k,v in matches.items() if v == True]
             name = "Unknown"
 
             # Check to see if we have found a match
@@ -240,9 +243,8 @@ def accessControl():
     # seconds
     while elapsedTime < maxElapsedTime:
         if unknown_count == unknown_count_max:
-            print("[INFO] %s pictures taken from an unknow subject. Exiting."
+            print("[INFO] %s pictures taken from an unknow subject."
                 % unknown_count_max)
-            break
         
         # If the dictionary of known face recognized is has keys (names), and
         # any of them has reached a count of 5, grant access to that subject
@@ -289,12 +291,18 @@ def main(encodings, display, detection_method):
     # face_names = []
     # process_this_frame = True
     pathToUnknown = "images/unknown_people/"
-    known_count = {}
-    unknown_count = 0
-    unknown_count_max = 30
-    granted = []
-    now = datetime.now()
-    maxElapsedTime = 15
+    known_count = {}        # Dictionnary to count the number of times each
+                            # known subject recognized is detected
+    known_count_max = 15    # Number of times a subject must be recogised
+                            # before granting access
+    if detection_method == "cnn":
+        known_count_max = 7
+    unknown_count = 0       # Number of times an unknown subject is detected
+    unknown_count_max = 15  # Max number of pictures taken of an unknown
+                            # subject
+    granted = []            # List of subject with granted access
+    now = datetime.now()    # For the unknown folder path name
+    maxElapsedTime = 15     # Max number of seconds with recognition mode on
 
     # Load encodings from the known faces, and warm up the camera sensor
     print("[INFO] loading encodings...", end =" ")
@@ -455,7 +463,7 @@ def main(encodings, display, detection_method):
         # any of them has reached a count of 5, grant access to that subject
         if bool(known_count):
             # print("known_count =", end = " ")
-            granted = [k for k,v in known_count.items() if float(v) == 5]
+            granted = [k for k,v in known_count.items() if float(v) == known_count_max]
             if granted:
                 for subject in granted:
                     subject_name = subject[:-10].replace("_", " ")
