@@ -255,6 +255,7 @@ def shutdown_server():
     if func is None:
         raise RuntimeError('Not running with the Werkzeug Server')
     func()
+    
 
 @app.route("/")#, methods=['GET', 'POST'])
 def index():
@@ -267,8 +268,13 @@ def admin():
     global encodings_process
     if request.method == 'POST':
         if "forceUpdate" in request.form:
-            updateEncodings(args["dataset"], args["encodings"],
-                args["encode_detection_method"])
+            # updateEncodings(args["dataset"], args["encodings"],
+            #     args["encode_detection_method"])
+            forced_encodings_process = multiprocessing.Process(name='Encodings',
+                target = updateEncodings,
+                args=(args["dataset"], args["encodings"], args["encode_detection_method"]))
+            forced_encodings_process.daemon = True
+            forced_encodings_process.start()
         elif "startProcess" in request.form:
             if not encodings_process.is_alive():
                 print("[INFO] Encodings update process started")
