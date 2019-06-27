@@ -320,8 +320,8 @@ def gen(camera):
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
 
-@app.route('/video_feed2')
-def video_feed2():
+@app.route('/video_feed')
+def video_feed():
     # global videoCamera #### A ELIMINAR SI NO FUNCIONA
     # videoCamera = faceRecon.VideoCamera(args["encodings"],
     #         args["recon_detection_method"], doRecon)

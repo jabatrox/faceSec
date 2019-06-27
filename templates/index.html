@@ -18,10 +18,10 @@
     <div id="heading">
         <!-- <img style="margin: 0px 10px 15px 0px; 
             height: 5%; width: 5%; vertical-align:middle;" 
-            src="{{ url_for('static', filename='img/Facial-Recognition.png') }}"
+            src="{{ url_for('static', filename='img/faceSec.png') }}"
             alt="Image" class="logo"> -->
         <img id="logo"
-            src="{{ url_for('static', filename='img/Facial-Recognition.png') }}"
+            src="{{ url_for('static', filename='img/faceSec.png') }}"
             alt="Image" class="logo">
         {% if userType == "admin" %}
         <span>FaceSec's Administrator</span>
@@ -32,7 +32,7 @@
     <div id="adminPanel">
         <h3>Live Video Streaming</h3>
         <div>
-            <img id="videofeed" src="{{ url_for('video_feed2') }}" alt="Video streaming should be here">
+            <img id="videofeed" src="{{ url_for('video_feed') }}" alt="Video streaming should be here">
             {% if userType == "admin" %}
             <div id="actions">
                 <span>ADMINISTRATOR ACTIONS:</span>
