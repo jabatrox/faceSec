@@ -142,7 +142,8 @@ class VideoCamera(object):
         for encoding in face_encodings:
             # Try to match each face in the input image to our known encodings
             matches = face_recognition.compare_faces(self.known_encodings["encodings"],
-                encoding)
+                encoding, tolerance=0.55)
+            index_match = [k for k,v in matches.items() if v == True]
             name = "Unknown"
 
             # Check to see if we have found a match
@@ -342,11 +343,32 @@ def main(encodings, display, detection_method):
         for encoding in face_encodings:
             # Try to match each face in the input image to our known encodings
             matches = face_recognition.compare_faces(known_encodings["encodings"],
-                encoding)
-            name = "Unknown"
-            # print("+++\nmatches = ", end="")
+                encoding, tolerance=0.55)
+            # matches_06 = face_recognition.compare_faces(known_encodings["encodings"],
+            #     encoding)
+            # distances = face_recognition.face_distance(known_encodings["encodings"],
+            #     encoding)
+            # index_match = [k for k,v in enumerate(matches) if v == True]
+            # index_match_06 = [k for k,v in enumerate(matches) if v == True]
+            # distances_match_06 = [k for k,v in enumerate(distances) if v <= 0.60]
+            # distances_match_055 = [k for k,v in enumerate(distances) if v <= 0.55]
+            # print("-"*20)
+            # print("index_match = ", end='')
+            # print(index_match)
+            # print("index_match_06 = ", end='')
+            # print(index_match_06)
+            # print("distances = ", end='')
+            # print(distances)
+            # print("distances_match_06 = ", end='')
+            # print(distances_match_06)
+            # print("distances_match_055 = ", end='')
+            # print(distances_match_055)
+            # print("matches = ", end='')
             # print(matches)
-            # print("---")
+            # print("matches_06 = ", end='')
+            # print(matches_06)
+            # print("-"*20)
+            name = "Unknown"
 
             # Check to see if we have found a match
             if True in matches:

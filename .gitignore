@@ -25,6 +25,6 @@
 __pycache__/
 Temp/
 images/unknown_people/
+Testing pictures/
 pi-face-recognition/
-Encodings time for *.png
 haarcascade_frontalface_default.xml
