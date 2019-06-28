@@ -301,9 +301,10 @@ def main(encodings, display, detection_method, known_count_max):
     # face_names = []
     # process_this_frame = True
 
-    # Pickup global variables
+    # Pickup global variables and reset them
     global known_count, unknown_count, unknown_count_max
     global granted, maxElapsedTime
+    startup()
     if detection_method == "cnn":                   # Lower value since CNN is
         known_count_max = int(known_count_max/2)    # slower but more accurate
 

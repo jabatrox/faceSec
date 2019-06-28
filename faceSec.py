@@ -11,7 +11,6 @@ import multiprocessing
 import schedule
 import time
 import sys
-import cv2
 import faceEncode
 import faceRecon
 import logging
@@ -40,9 +39,13 @@ ap.add_argument("-c", "--count-recon", type=int, default=15,
         help="number of times a subject must be recogised before granting "+
         "access while using `hog` detection method (it will auto calculate "+
         "it for `cnn`. Test to adjust manually\ndefault: 15")
-ap.add_argument("-y", "--display", type=int, default=1,
+ap.add_argument("-L", "--local", type=int, default=0,
+    help="whether or not to run the script in local computer (without web "+
+        "server).\ndefault: '0' (no)")
+ap.add_argument("-Y", "--display", type=int, default=1,
     help="whether or not to display output frame to screen during live "+
-        "recognition\ndefault: '1' (yes)")
+        "recognition. Used when the script is run in local (see option '-L')"+
+        "\ndefault: '1' (yes)")
 args = vars(ap.parse_args())
 
 
@@ -64,9 +67,10 @@ accepted_cards = ['1234', '5678']
 received_card_number = ""
 
 # Create the videoCamera object with the parsed arguments
-videoCamera = faceRecon.VideoCamera(args["encodings"],
-            args["recon_detection_method"], int(args["count_recon"]))
-videoCam_started = False
+if not args["local"]:
+    videoCamera = faceRecon.VideoCamera(args["encodings"],
+                args["recon_detection_method"], int(args["count_recon"]))
+    videoCam_started = False
 
 
 ####################### UPDATE WELCOME MESSAGE CLASS #######################
@@ -90,7 +94,7 @@ class updateWelcomeThread(Thread):
 
             # Update name only if it has changed (someone has swiped the card)
             if received_card_number in accepted_cards:
-                msg = "Hello "+received_card_number+"! Please now place yourself in front of the camera for face recognition"
+                msg = f"Hello {received_card_number}! Please now place yourself in front of the camera for face recognition"
             if thread_display_name.isSet():
                 socketio.emit('newMessage', {'message': msg})
                 thread_display_name.clear()
@@ -158,8 +162,9 @@ def updateEncodings(dataset, encodings, encode_detection_method):
     elapsedTime = (endTime - startTime)
     print(f"[FINISHED] encoding time: {elapsedTime} ({elapsedTime.total_seconds()}s)")
 
-    # Force reload of the encodings in the videoCamera object
-    videoCamera.load_encodings()
+    if not args["local"]:
+        # Force reload of the encodings in the videoCamera object
+        videoCamera.load_encodings()
     print("-"*60)
 
 
@@ -185,18 +190,20 @@ def liveFaceRecon(encodings, display, recon_detection_method, count_recon):
     print("[INFO] encodings input path: '%s'" % encodings)
     print("[INFO] display frame: '%s'" % display)
     print("[INFO] face detection method: '%s'" % recon_detection_method)
+    print("[INFO] times before recognition success (for HOG): '%s'" % count_recon)
 
-    # Reset faceRecon variables to default and start facial recognition
-    faceRecon.startup()
-    videoCamera.doRecon = True
-    # Check for recognized subject, return the list of the ones having access
-    # granted, and stop facial recognition
-    granted = faceRecon.accessControl(videoCamera.detection_method, 
-        videoCamera.known_count_max)
-    videoCamera.doRecon = False
-    
-    # granted = faceRecon.main(encodings, display, recon_detection_method,
-    #   count_recon)
+    if not args["local"]:
+        # Reset faceRecon variables to default and start facial recognition
+        faceRecon.startup()
+        videoCamera.doRecon = True
+        # Check for recognized subject, return the list of the ones having access
+        # granted, and stop facial recognition
+        granted = faceRecon.accessControl(videoCamera.detection_method, 
+            videoCamera.known_count_max)
+        videoCamera.doRecon = False
+    else: # Running in local
+        granted = faceRecon.main(encodings, display, recon_detection_method,
+            count_recon)
     # granted = ['Javier_Soler_Macias_A20432537']
     print("-"*60)
     return granted
@@ -363,7 +370,7 @@ def video_feed():
     return Response(gen(videoCamera),
         mimetype='multipart/x-mixed-replace; boundary=frame')
     # else:
-        # return send_file("static/img/Facial-Recognition.png", mimetype='image/png', cache_timeout=0)
+        # return send_file("static/img/faceSec.png", mimetype='image/png', cache_timeout=0)
 
 
 @app.after_request
@@ -377,26 +384,6 @@ def add_header(r):
     r.headers["Expires"] = "0"
     r.headers['Cache-Control'] = 'public, max-age=0'
     return r
-
-# @app.route('/post', methods = ["POST"])
-# def post():
- 
-#     print(request.data)
-#     return ''
-
-# @app.route('/logo.png')
-# def video_stream():
-#     """The logo of the website"""
-#     # img = get_main_image()
-#     return send_file("static/img/Facial-Recognition.png")#, cache_timeout=0)
-
-# @app.route("/members/<string:name>/")
-# def getMember(name):
-#     # return f"Hello {name}!"
-#     return render_template('index.html',name=name)#</name>
-
-# def flask_thread():
-#     app.run(host='0.0.0.0', port=3000)
 
 if __name__ == "__main__":
     # Initialize some variables
@@ -417,50 +404,54 @@ if __name__ == "__main__":
             target = launchUpdateEncodings)
         encodings_process.daemon = True
         encodings_process.start()
-        # onFirstRun = False
         
-        # app.run(host='0.0.0.0', port=3000)#, debug=True)
-        socketio.run(app, host='0.0.0.0', port=3000)#, processes=1, debug=True)
-        # flask_thread = threading.Thread(target=flask_thread)
-        # flask_thread.setDaemon(True)
-        # flask_thread.start()
+        if not args["local"]: # Start as Fask/socket.io app, with webserver
+            # app.run(host='0.0.0.0', port=3000)#, debug=True)
+            socketio.run(app, host='0.0.0.0', port=3000)#, processes=1, debug=True)
+            # flask_thread = threading.Thread(target=flask_thread)
+            # flask_thread.setDaemon(True)
+            # flask_thread.start()
+        else: # Run in local
+            print("Script running in local")
+            import cv2
 
-        # while True:
-        #     # Start/stop the encodings update process when `n` or `m` keys
-        #     # are pressed, force encodings update with `f` key and exit the
-        #     # program with the `q` key
-        #     cv2.imshow('img',cv2.imread('static/img/Facial-Recognition.png'))
-        #     key = cv2.waitKey(0)
-        #     if key == ord("q"):    # Esc key to stop
-        #         if encodings_process.is_alive():
-        #             print("[INFO] stopping encodings update process before "
-        #                 +"exiting...", end=" ")
-        #             encodings_process.terminate()
-        #             time.sleep(0.1)
-        #             print("[DONE]")
-        #         break
-        #     elif key == ord("f"):
-        #         updateEncodings(args["dataset"], args["encodings"],
-        #             args["encode_detection_method"])
-        #     elif key == ord("n"): #14: # CTRL + n
-        #         print("[INFO] Encodings update process stopped")
-        #         encodings_process.terminate()
-        #         time.sleep(0.1)
-        #     elif key == ord("m"): #13: # CTRL + m
-        #         if not encodings_process.is_alive():
-        #             print("[INFO] Encodings update process started")
-        #             encodings_process = multiprocessing.Process(
-        #                 target = launchUpdateEncodings)
-        #             encodings_process.start()
-        #         else:
-        #             print("[WARNING] Encodings update process already running")
-        # cv2.destroyAllWindows()
-        # print("[FINISHED] program existing")
-        # sys.exit(0)
+            while True:
+                # Start/stop the encodings update process when `n` or `m` keys
+                # are pressed, force encodings update with `f` key and exit the
+                # program with the `q` key
+                cv2.imshow('img',cv2.imread('static/img/faceSec.png'))
+                key = cv2.waitKey(0)
+                if key == ord("q"):    # Esc key to stop
+                    if encodings_process.is_alive():
+                        print("[INFO] stopping encodings update process before "
+                            +"exiting...", end=" ")
+                        encodings_process.terminate()
+                        time.sleep(0.1)
+                        print("[DONE]")
+                    break
+                elif key == ord("f"):
+                    updateEncodings(args["dataset"], args["encodings"],
+                        args["encode_detection_method"])
+                elif key == ord("n"): # 14 = CTRL + n ?
+                    print("[INFO] Encodings update process stopped")
+                    encodings_process.terminate()
+                    time.sleep(0.1)
+                elif key == ord("m"): # 13 = CTRL + m ?
+                    if not encodings_process.is_alive():
+                        print("[INFO] Encodings update process started")
+                        encodings_process = multiprocessing.Process(
+                            target = launchUpdateEncodings)
+                        encodings_process.start()
+                    else:
+                        print("[WARNING] Encodings update process already running")
+            cv2.destroyAllWindows()
+            print("[FINISHED] program existing")
+            sys.exit(0)
 
     except KeyboardInterrupt:
         print("KeyboardInterrupt: main loop interrupted")
-        # cv2.destroyAllWindows()
+        if args["local"]:
+            cv2.destroyAllWindows()
         encodings_process.terminate()
         time.sleep(0.1)
         sys.exit(1)
