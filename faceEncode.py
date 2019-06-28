@@ -6,7 +6,7 @@ Therefore:
     - When encoding on laptop, desktop, or GPU (slower, more accurate): use `cnn` detection method
     - When encoding on Raspberry Pi or just with CPU (no GPU) (faster, less accurate): use `hog` detection method
 
-This module can also be called as an independent script.
+This module can also be runned as an independent script.
 
 Usage examples:
     python faceEncode.py
@@ -28,9 +28,12 @@ def main(dataset, encodings, detection_method):
     '''
     Performs the encodings update.
 
-        :param dataset: path to input directory of face images to encode (default: 'images/known_people').
-        :param encodings: output path to serialized db of facial encodings (default: 'encodings.pickle').
-        :param encode_detection_method: face detection model to use for encodings: either 'hog' or 'cnn' (default: 'hog').
+    :param `dataset`: path to input directory of face images to encode 
+    (default: `'images/known_people'`).\n
+    :param `encodings`: output path to serialized db of facial encodings 
+    (default: `'encodings.pickle'`).\n
+    :param `encode_detection_method`: face detection model to use for 
+    encodings: either `'hog'` or `'cnn'` (default: `'hog'`).
     '''
     # Grab the paths to the images of the dataset and count them
     print("[INFO] quantifying faces...", end=" ")

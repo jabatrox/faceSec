@@ -36,13 +36,17 @@ ap.add_argument("-d", "--encode-detection-method", type=str, default="hog",
 ap.add_argument("-r", "--recon-detection-method", type=str, default="hog",
     help="face detection model to use for live recognition: either 'hog' "+
         "or 'cnn'\ndefault: 'hog'")
+ap.add_argument("-c", "--count-recon", type=int, default=15,
+        help="number of times a subject must be recogised before granting "+
+        "access while using `hog` detection method (it will auto calculate "+
+        "it for `cnn`. Test to adjust manually\ndefault: 15")
 ap.add_argument("-y", "--display", type=int, default=1,
     help="whether or not to display output frame to screen during live "+
         "recognition\ndefault: '1' (yes)")
 args = vars(ap.parse_args())
 
 
-###################### FLAKS AND SOCKET.IO INITIALIZER #####################
+###################### FLASK AND SOCKET.IO INITIALIZER #####################
 
 # Start and config Flask and Socket.io app
 app = Flask(__name__)
@@ -58,12 +62,10 @@ log.setLevel(logging.ERROR)
 # Some basic variables
 accepted_cards = ['1234', '5678']
 received_card_number = ""
-onFirstRun = True
-# doRecon = False # Is it doing face recognition or just streaming?
 
 # Create the videoCamera object with the parsed arguments
 videoCamera = faceRecon.VideoCamera(args["encodings"],
-            args["recon_detection_method"], False)
+            args["recon_detection_method"], int(args["count_recon"]))
 videoCam_started = False
 
 
@@ -75,8 +77,8 @@ thread_display_name = threading.Event()
 thread_display_name.set()
 class updateWelcomeThread(Thread):
     '''
-        Updates the name of the person who has swiped the card (if any),
-        otherwise shows "Waiting for user..."
+    Updates the name of the person who has swiped the card (if any),
+    otherwise shows "Waiting for user..."
     '''
     def __init__(self):
         self.delay = 1
@@ -107,22 +109,30 @@ def launchUpdateEncodings():
     '''
     Launch the scheduler to update the encodings at the specified time.
     '''
-    print("[INFO] process to update encodings launched and running "+
-        "in background. It will update encodings everyday at %s"
-        % args["encodings_update_time"])
-    schedule.every().day.at(args["encodings_update_time"]).do(updateEncodings,
-        args["dataset"], args["encodings"], args["encode_detection_method"])
-    while True:
-        schedule.run_pending()
-
+    try:
+        print("[INFO] process to update encodings launched and running "+
+            "in background. It will update encodings everyday at %s"
+            % args["encodings_update_time"])
+        schedule.every().day.at(args["encodings_update_time"]).do(updateEncodings,
+            args["dataset"], args["encodings"], args["encode_detection_method"])
+        while True:
+            schedule.run_pending()
+    except KeyboardInterrupt:
+        print("\nKeyboardInterrupt: stopping encodings update process and "
+            +"ending...", end=" ")
+        schedule.clear()
+        print("[DONE]")
 
 def updateEncodings(dataset, encodings, encode_detection_method):
     '''
     Performs the encodings update.
 
-        :param dataset: path to input directory of face images to encode (default: 'images/known_people').
-        :param encodings: output path to serialized db of facial encodings (default: 'encodings.pickle').
-        :param encode_detection_method: face detection model to use for encodings: either 'hog' or 'cnn' (default: 'hog').
+    :param `dataset`: path to input directory of face images to encode 
+    (default: `'images/known_people'`).\n
+    :param `encodings`: output path to serialized db of facial encodings 
+    (default: `'encodings.pickle'`).\n
+    :param `encode_detection_method`: face detection model to use for 
+    encodings: either `'hog'` or `'cnn'` (default: `'hog'`).
     '''
     # python faceEncode.py
     #   --dataset images/known_people
@@ -148,22 +158,23 @@ def updateEncodings(dataset, encodings, encode_detection_method):
     elapsedTime = (endTime - startTime)
     print(f"[FINISHED] encoding time: {elapsedTime} ({elapsedTime.total_seconds()}s)")
 
-    # Force reload of the encodings in the videoCamera object if it's not the
-    # first startup run of the program (encodings are already loaded when the
-    # camera object is created)
-    if not onFirstRun:
-        videoCamera.load_encodings()
+    # Force reload of the encodings in the videoCamera object
+    videoCamera.load_encodings()
     print("-"*60)
 
 
-def liveFaceRecon(encodings, display, recon_detection_method):
+def liveFaceRecon(encodings, display, recon_detection_method, count_recon):
     '''
     Performs the live face recognition.
 
-        :param encodings: input path to serialized db of facial encodings (default: 'encodings.pickle').
-        :param display: whether or not to display output frame to screen during live recognition (default: 1 (yes)).
-        :param recon_detection_method: face detection model to use for live recognition: either 'hog' or 'cnn' (default: 'hog').
-        :return The list of granted subject received from the live recognition module
+    :param `encodings`: input path to serialized db of facial encodings 
+    (default: `'encodings.pickle'`).\n
+    :param `display`: whether or not to display output frame to screen during 
+    live recognition (default: `1` (yes)).\n
+    :param `recon_detection_method`: face detection model to use for live 
+    recognition: either `'hog'` or `'cnn'` (default: `'hog'`).\n
+    :return The list of `granted` subject received from the live recognition 
+    module
     '''
     # python faceRecon.py
     #     --encodings encodings.pickle
@@ -180,10 +191,12 @@ def liveFaceRecon(encodings, display, recon_detection_method):
     videoCamera.doRecon = True
     # Check for recognized subject, return the list of the ones having access
     # granted, and stop facial recognition
-    granted = faceRecon.accessControl()
+    granted = faceRecon.accessControl(videoCamera.detection_method, 
+        videoCamera.known_count_max)
     videoCamera.doRecon = False
     
-    # granted = faceRecon.main(encodings, display, recon_detection_method)
+    # granted = faceRecon.main(encodings, display, recon_detection_method,
+    #   count_recon)
     # granted = ['Javier_Soler_Macias_A20432537']
     print("-"*60)
     return granted
@@ -194,9 +207,10 @@ def accesslog(received_card_number, onDB, granted):
     Log for the door access. Keeps record of whether the attemp was successful
     or unsuccessful, and the reason for it in the latter case
 
-        :param received_card_number: number of the card swiped at the door.
-        :param onDB: boolean of whether or not the card number is on the list of accepted cards.
-        :param granted: boolean of whether the access was granted or denied.
+    :param `received_card_number`: number of the card swiped at the door.\n
+    :param `onDB`: boolean of whether or not the card number is on the list 
+    of accepted cards.\n
+    :param `granted`: boolean of whether the access was granted or denied.
     '''
     # Save a different message depending if the user attempt was successful or
     # not
@@ -239,7 +253,7 @@ def waitForCard():
             print("Card accepted. Please now place yourself in front of the "+
                 "camera for face recognition")
             granted = liveFaceRecon(args["encodings"], args["display"],
-                args["recon_detection_method"])
+                args["recon_detection_method"], args["count_recon"])
             if granted:
                 print("[SUCCESS] you can now enter the lab")
                 accesslog(received_card_number, True, True)
@@ -255,7 +269,7 @@ def shutdown_server():
     if func is None:
         raise RuntimeError('Not running with the Werkzeug Server')
     func()
-    
+
 
 @app.route("/")#, methods=['GET', 'POST'])
 def index():
@@ -264,30 +278,41 @@ def index():
 
 @app.route("/admin/", methods=['GET', 'POST'])
 def admin():
-    # message = {'msg': 'Hello Admin!'}
     global encodings_process
     if request.method == 'POST':
-        if "forceUpdate" in request.form:
-            # updateEncodings(args["dataset"], args["encodings"],
-            #     args["encode_detection_method"])
-            forced_encodings_process = multiprocessing.Process(name='Encodings',
+        if "forceUpdateHOG" in request.form:
+            forced_encodings_HOG_process = multiprocessing.Process(name='Encodings',
                 target = updateEncodings,
-                args=(args["dataset"], args["encodings"], args["encode_detection_method"]))
-            forced_encodings_process.daemon = True
-            forced_encodings_process.start()
+                args=(args["dataset"], args["encodings"], "hog"))
+            forced_encodings_HOG_process.daemon = True
+            forced_encodings_HOG_process.start()
+            forced_encodings_HOG_process.join()
+            flash("Encodings succesfully updated with 'HOG'", 'success')
+        elif "forceUpdateCNN" in request.form:
+            forced_encodings_CNN_process = multiprocessing.Process(name='Encodings',
+                target = updateEncodings,
+                args=(args["dataset"], args["encodings"], "cnn"))
+            forced_encodings_CNN_process.daemon = True
+            forced_encodings_CNN_process.start()
+            forced_encodings_CNN_process.join()
+            flash("Encodings succesfully updated with 'CNN'", 'success')
         elif "startProcess" in request.form:
             if not encodings_process.is_alive():
-                print("[INFO] Encodings update process started")
+                message = "[INFO] Encodings update process is started and running"
+                flash(message[6:], 'info')
+                print(message)
                 encodings_process = multiprocessing.Process(
                     target = launchUpdateEncodings)
                 encodings_process.start()
-                onFirstRun = False
             else:
-                print("[WARNING] Encodings update process already running")
+                message = "[WARNING] Encodings update process is already running"
+                flash(message[9:], 'warning')
+                print(message)
         elif "stopProcess" in request.form:
-            print("[INFO] Encodings update process stopped")
+            message = "[INFO] Encodings update process has been stopped"
+            flash(message[6:], 'info')
+            print(message)
             encodings_process.terminate()
-            onFirstRun = True
             time.sleep(0.1)
         elif "quit" in request.form:
             if encodings_process.is_alive():
@@ -296,13 +321,12 @@ def admin():
                 encodings_process.terminate()
                 time.sleep(0.1)
                 print("[DONE]")
-            # cv2.destroyAllWindows()
             print("[FINISHED] program existing")
             shutdown_server()
             return 'Server shutting down...'
     elif request.method == 'GET':
         print("[INFO] admin website loaded")
-    return render_template('index.html', userType="admin")#message=message, userType="admin")
+    return render_template('index.html', userType="admin")
 
 
 @socketio.on('newMessage')
@@ -393,10 +417,10 @@ if __name__ == "__main__":
             target = launchUpdateEncodings)
         encodings_process.daemon = True
         encodings_process.start()
-        onFirstRun = False
+        # onFirstRun = False
         
         # app.run(host='0.0.0.0', port=3000)#, debug=True)
-        socketio.run(app, host='0.0.0.0', port=3000)#, debug=True)
+        socketio.run(app, host='0.0.0.0', port=3000)#, processes=1, debug=True)
         # flask_thread = threading.Thread(target=flask_thread)
         # flask_thread.setDaemon(True)
         # flask_thread.start()

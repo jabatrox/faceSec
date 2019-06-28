@@ -29,7 +29,6 @@ setup(
         #   4 - Beta
         #   5 - Production/Stable
         'Development Status :: 3 - Alpha',
-        # Indicate who your project is intended for
         'Environment :: Console',
         'Environment :: Web Environment',
         'Intended Audience :: Education',
@@ -41,26 +40,13 @@ setup(
         'Topic :: Multimedia :: Video :: Capture',
         'Topic :: Multimedia :: Video :: Display',
         'Topic :: Scientific/Engineering :: Visualization',
-        # Pick your license as you wish
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
-        # Specify the Python versions you support here. In particular, ensure
-        # that you indicate whether you support Python 2, Python 3 or both.
         # These classifiers are *not* checked by 'pip install'. See instead
         # 'python_requires' below.
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
     keywords='facial recognition webserver webcam two-side authentication security',  # Optional
-
-    # You can just specify package directories manually here if your project is
-    # simple. Or you can use find_packages().
-    #
-    # Alternatively, if you just want to distribute a single Python file, use
-    # the `py_modules` argument instead as follows, which will expect a file
-    # called `my_module.py` to exist:
-    #
-    #   py_modules=["my_module"],
-    #
     packages=find_packages(exclude=['tests']),  # Required
     python_requires='>=3.6',
     install_requires=[

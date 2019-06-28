@@ -1,13 +1,12 @@
 '''
 Live facial recognition over a videostream.
 
-This module can also be called as an independent script.
+This module can also be runned as an independent script.
 
 Usage examples:
     python faceRecon.py
     python faceRecon.py --encodings myEncodings.pickle --display 0 --detection-method cnn
 Default params are '--encodings encodings.pickle --display 1 --detection-method hog'
-
 '''
 
 # Import the necessary packages
@@ -40,10 +39,8 @@ import imutils
 pathToUnknown = "images/unknown_people/"
 known_count = {}        # Dictionnary to count the number of times each known
                         # subject recognized is detected
-known_count_max = 15    # Number of times a subject must be recogised
-                            # before granting access
-if detection_method == "cnn":
-    known_count_max = 7
+# known_count_max = 15    # Number of times a subject must be recogised
+                        # before granting access
 unknown_count = 0       # Number of times an unknown subject is detected
 unknown_count_max = 15  # Max number of pictures taken of an unknown subject
 granted = []            # List of subject with granted access
@@ -51,7 +48,7 @@ now = datetime.now()    # For the unknown folder path name
 maxElapsedTime = 15     # Max number of seconds with recognition mode on
 
 def startup():
-    global known_count, unknown_count, unknown_count_max, granted, now, maxElapsedTime
+    global known_count, unknown_count, granted, now
     known_count = {}
     unknown_count = 0
     granted = []
@@ -59,20 +56,27 @@ def startup():
 
 class VideoCamera(object):
     '''
-    Creates a VideoCamera object
+    Creates a VideoCamera object.
     
-        :param encodings: input path to serialized db of facial encodings.\n
-        :param recon_detection_method: face detection model to use for live recognition: either 'hog' or 'cnn'.\n
-        :param doRecon: whether or not to the program is on recognition mode (and frames should be processed).\n
+    :param `encodings`: input path to serialized db of facial encodings.\n
+    :param `recon_detection_method`: face detection model to use for live 
+    recognition: either `'hog'` or `'cnn'`.\n
+    :param `known_count_max`: number of times a subject must be recogised 
+    before granting access while using `'hog'` detection method (half of if is 
+    used for `'cnn'` (default: `15`).\n
+    :param `doRecon`: whether or not to the program is on recognition mode 
+    (and frames should be processed) (default: `False`).\n
     '''
 
-    def __init__(self, encodings, detection_method, doRecon):
+    def __init__(self, encodings, detection_method, known_count_max=15,
+        doRecon=False):
         # If using pure OpenCV (instead of 'VideoStream' from imutils.video),
         # uncomment the following line and comment the next one, and do the
         # same in the 'def __del__(self):' function
         # self.video_stream = cv2.VideoCapture(0)
         self.encodings = encodings
         self.detection_method = detection_method
+        self.known_count_max = known_count_max
         self.doRecon = doRecon
         self.load_encodings()
         print("############### OPEN CAMERA ###############")
@@ -225,15 +229,13 @@ class VideoCamera(object):
                 0.75, (0, 255, 0), 2)
         return frame
 
-def accessControl():
+def accessControl(detection_method, known_count_max):
+    # Pickup global variables
     global known_count, unknown_count, unknown_count_max
-    global granted, now, maxElapsedTime
-    # known_count = {}
-    # unknown_count = 0
-    # unknown_count_max = 30
-    # granted = []
-    # now = datetime.now()
-    # maxElapsedTime = 15
+    global granted, maxElapsedTime
+
+    if detection_method == "cnn":                   # Lower value since CNN is
+        known_count_max = int(known_count_max/2)    # slower but more accurate
 
     # Start the time counter
     startTime = datetime.now()
@@ -243,14 +245,14 @@ def accessControl():
     # seconds
     while elapsedTime < maxElapsedTime:
         if unknown_count == unknown_count_max:
-            print("[INFO] %s pictures taken from an unknow subject."
+            print("[WARNING] %s pictures taken from an unknow subject."
                 % unknown_count_max)
         
         # If the dictionary of known face recognized is has keys (names), and
         # any of them has reached a count of 5, grant access to that subject
         if bool(known_count):
-            # print("known_count =", end = " ")
-            granted = [k for k,v in known_count.items() if float(v) == 5]
+            granted = [k for k,v in known_count.items()
+                if float(v) == known_count_max]
             if granted:
                 for subject in granted:
                     subject_name = subject[:-10].replace("_", " ")
@@ -268,6 +270,7 @@ def accessControl():
             "card again")
     return granted
 
+
 ############################################################################
 ############################################################################
 ############################### MAIN PROGRAM ###############################
@@ -275,14 +278,21 @@ def accessControl():
 ############################################################################
 ############################################################################
 
-def main(encodings, display, detection_method):
+def main(encodings, display, detection_method, known_count_max):
     '''
     Performs live facial recognition on a videostream from the default camera.
 
-    :param encodings: input path to serialized db of facial encodings (default: 'encodings.pickle').\n
-    :param display: whether or not to display output frame to screen during live recognition (default: 1 (yes)).\n
-    :param recon_detection_method: face detection model to use for live recognition: either 'hog' or 'cnn' (default: 'hog').\n
-    :return The list of granted subject received from the live recognition module
+    :param `encodings`: input path to serialized db of facial encodings 
+    (default: `'encodings.pickle'`).\n
+    :param `display`: whether or not to display output frame to screen during 
+    live recognition (default: `1` (yes)).\n
+    :param `recon_detection_method`: face detection model to use for live 
+    recognition: either `'hog'` or `'cnn'` (default: `'hog'`).\n
+    :param `known_count_max`: number of times a subject must be recogised 
+    before granting access while using `'hog'` detection method (half of if is 
+    used for `'cnn'` (default: `15`).\n
+    :return The list of `granted` subject received from the live recognition 
+    module
     '''
 
     # Initialize some variables
@@ -290,19 +300,12 @@ def main(encodings, display, detection_method):
     # face_encodings = []
     # face_names = []
     # process_this_frame = True
-    pathToUnknown = "images/unknown_people/"
-    known_count = {}        # Dictionnary to count the number of times each
-                            # known subject recognized is detected
-    known_count_max = 15    # Number of times a subject must be recogised
-                            # before granting access
-    if detection_method == "cnn":
-        known_count_max = 7
-    unknown_count = 0       # Number of times an unknown subject is detected
-    unknown_count_max = 15  # Max number of pictures taken of an unknown
-                            # subject
-    granted = []            # List of subject with granted access
-    now = datetime.now()    # For the unknown folder path name
-    maxElapsedTime = 15     # Max number of seconds with recognition mode on
+
+    # Pickup global variables
+    global known_count, unknown_count, unknown_count_max
+    global granted, maxElapsedTime
+    if detection_method == "cnn":                   # Lower value since CNN is
+        known_count_max = int(known_count_max/2)    # slower but more accurate
 
     # Load encodings from the known faces, and warm up the camera sensor
     print("[INFO] loading encodings...", end =" ")
@@ -317,7 +320,6 @@ def main(encodings, display, detection_method):
     print("[DONE]")
     print("[INFO] starting video stream...", end =" ")
     video_stream = VideoStream(src=0).start()
-    # video_stream = VideoCamera().start()
     time.sleep(1.0)
     print("[DONE]")
 
@@ -463,7 +465,8 @@ def main(encodings, display, detection_method):
         # any of them has reached a count of 5, grant access to that subject
         if bool(known_count):
             # print("known_count =", end = " ")
-            granted = [k for k,v in known_count.items() if float(v) == known_count_max]
+            granted = [k for k,v in known_count.items()
+                if float(v) == known_count_max]
             if granted:
                 for subject in granted:
                     subject_name = subject[:-10].replace("_", " ")
@@ -501,6 +504,10 @@ def argParser():
     ap.add_argument("-d", "--detection-method", type=str, default="hog",
         help="face detection model to use: either `hog` or `cnn`"+
         "\ndefault: 'hog'")
+    ap.add_argument("-c", "--count-recon", type=int, default=15,
+        help="number of times a subject must be recogised before granting "+
+        "access while using `hog` detection method (it will auto calculate "+
+        "it for `cnn`. Test to adjust manually\ndefault: 15")
     global args
     args = vars(ap.parse_args())
     return args
@@ -511,4 +518,5 @@ if __name__ == "__main__":
     argParser()
     
     # Call the 'main' function with the parsed arguments
-    main(args["encodings"], args["display"], args["detection_method"])
+    main(args["encodings"], args["display"], args["detection_method"],
+        args["count_recon"])

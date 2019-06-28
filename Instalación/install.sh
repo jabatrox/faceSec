@@ -6,7 +6,7 @@ sudo apt-get install build-essential cmake
 sudo apt-get install libopenblas-dev liblapack-dev
 sudo apt-get install libx11-dev libgtk-3-dev
 sudo apt-get install python3 python3-dev python3-pip
-pip3 install numpy
+pip3 install numpy pathlib2
 pip3 install opencv-contrib-python
 git clone https://github.com/davisking/dlib.git
 cd dlib

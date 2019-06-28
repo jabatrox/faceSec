@@ -6,7 +6,6 @@ body
 #heading
 {
     clear: both;
-    /* vertical-align: center; */
 }
 
 #logo
@@ -20,8 +19,6 @@ body
 #heading > span
 {
     font-size: 32pt;
-    /* vertical-align: center; */
-    /* margin-top: 15px; */
 }
 
 #adminPanel
@@ -30,9 +27,6 @@ body
     vertical-align: top;
     margin-top: 10px;
     width: 100%;
-    /* align-content: left; */
-    /* float: left; */
-    /* clear: both; */
 }
 
 #videofeed
@@ -47,31 +41,29 @@ body
 {
     margin: 30px;
     float: left;
-    /* width: 49.5%;
-    display: inline-block;
-    vertical-align: top; */
-    /* float: left; */
-    /* text-align: left; */
 }
 
 #actions > span
 {
     text-align: center;
     font-size: 18pt;
-    /* font-size: 2pt; */
 }
 
 #actions > form
 {
     margin-top: 15px;
-    /* font-size: 2pt; */
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-gap: 15px;
     grid-auto-rows: minmax(50px, auto);
 }
 
-/*  Alternative style for admin buttons: all in one column, one after the other
+form > #quit
+{
+    grid-column: span 2;
+}
+
+/*  Alternative style for admin buttons postion: all in one column, one after the other
 #actions > form
 {
     margin-top: 15px;
