@@ -327,3 +327,6 @@ Access refused on: 2019-06-28 11:23:46.402360 for card ID '' (card ID not accept
 Access refused on: 2019-06-28 11:24:15.829177 for card ID '1234' (no face detection)
 Access granted on: 2019-06-28 11:24:28.062983 for card ID '1234'
 Access granted on: 2019-06-28 11:27:35.857872 for card ID '1234'
+Access granted on: 2019-06-28 11:40:17.188244 for card ID '1234'
+Access granted on: 2019-06-28 22:06:21.455697 for card ID '1234'
+Access granted on: 2019-06-28 22:06:30.787205 for card ID '1234'

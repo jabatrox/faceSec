@@ -70,16 +70,18 @@ class VideoCamera(object):
 
     def __init__(self, encodings, detection_method, known_count_max=15,
         doRecon=False):
-        # If using pure OpenCV (instead of 'VideoStream' from imutils.video),
-        # uncomment the following line and comment the next one, and do the
-        # same in the 'def __del__(self):' function
+        print("############### OPEN CAMERA ###############")
+        # NOTE: If using pure OpenCV (instead of 'VideoStream' from imutils.video),
+        # uncomment the following line and comment the one from the 'start'
+        # function saying "self.stream = VideoStream(src=0)". Also, in the
+        # 'def __del__(self):' function, uncomment the first line and comment
+        # the second one
         # self.video_stream = cv2.VideoCapture(0)
         self.encodings = encodings
         self.detection_method = detection_method
         self.known_count_max = known_count_max
         self.doRecon = doRecon
         self.load_encodings()
-        print("############### OPEN CAMERA ###############")
     
     def __del__(self):
         # self.video_stream.release()
@@ -123,6 +125,16 @@ class VideoCamera(object):
         ret, jpeg = cv2.imencode('.jpg', frame)
         return jpeg.tobytes()
 
+    def get_frame_local(self):
+        # Read the frame from the camera
+        frame = self.read()
+
+        # If program is on recognition mode (from the main module, 'faceSec'),
+        # process the frame to detect and recognize faces
+        if self.doRecon:
+            frame = self.process_frame(frame)
+        return frame
+
     def process_frame(self, frame):
         # Process each received frame from the video stream (on recognition
         # mode)
@@ -152,6 +164,30 @@ class VideoCamera(object):
             matches = face_recognition.compare_faces(self.known_encodings["encodings"],
                 encoding, tolerance=0.55)
             name = "Unknown"
+            # matches_06 = face_recognition.compare_faces(known_encodings["encodings"],
+            #     encoding)
+            # distances = face_recognition.face_distance(known_encodings["encodings"],
+            #     encoding)
+            # index_match = [k for k,v in enumerate(matches) if v == True]
+            # index_match_06 = [k for k,v in enumerate(matches) if v == True]
+            # distances_match_06 = [k for k,v in enumerate(distances) if v <= 0.60]
+            # distances_match_055 = [k for k,v in enumerate(distances) if v <= 0.55]
+            # print("-"*20)
+            # print("index_match = ", end='')
+            # print(index_match)
+            # print("index_match_06 = ", end='')
+            # print(index_match_06)
+            # print("distances = ", end='')
+            # print(distances)
+            # print("distances_match_06 = ", end='')
+            # print(distances_match_06)
+            # print("distances_match_055 = ", end='')
+            # print(distances_match_055)
+            # print("matches = ", end='')
+            # print(matches)
+            # print("matches_06 = ", end='')
+            # print(matches_06)
+            # print("-"*20)
 
             # Check to see if we have found a match
             if True in matches:
@@ -308,21 +344,11 @@ def main(encodings, display, detection_method, known_count_max):
     if detection_method == "cnn":                   # Lower value since CNN is
         known_count_max = int(known_count_max/2)    # slower but more accurate
 
-    # Load encodings from the known faces, and warm up the camera sensor
-    print("[INFO] loading encodings...", end =" ")
-    try:
-        with open(encodings) as file:
-            pass
-    except IOError as e:
-        # Does not exist OR no read permissions
-        print("\n[ERROR] Unable to open file")
-        sys.exit(1)
-    known_encodings = pickle.loads(open(encodings, "rb").read())
-    print("[DONE]")
-    print("[INFO] starting video stream...", end =" ")
-    video_stream = VideoStream(src=0).start()
-    time.sleep(1.0)
-    print("[DONE]")
+    videoCam_started = False
+    videoCamera = VideoCamera(encodings, detection_method, known_count_max)
+    if not videoCam_started:
+        videoCam_started = True
+        videoCamera.start()
 
     # Start the time counter
     startTime = datetime.now()
@@ -332,122 +358,9 @@ def main(encodings, display, detection_method, known_count_max):
     # seconds
     while elapsedTime < maxElapsedTime:
         # Grab a frame from the threaded video stream
-        frame = video_stream.read()
+        frame = videoCamera.get_frame_local()
+        videoCamera.doRecon = True
         
-        # Convert the input frame from BGR color (which OpenCV uses) to
-        # RGB (which face_recognition uses), and then resize it to 1/4 size 
-        # for faster face recognition processing. The resizing is by default
-        # 1/4 of the original image, but it can be set to any size.
-        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        rgb = imutils.resize(rgb, width=int(rgb.shape[1]/4)) # width=400
-        r = frame.shape[1] / float(rgb.shape[1])
-
-        # Detect the (x, y)-coordinates of the bounding face locations
-        # corresponding to each face in the input frame, and then compute the
-        # facial embeddings for each face
-        face_locations = face_recognition.face_locations(rgb,
-            model=detection_method)
-        face_encodings = face_recognition.face_encodings(rgb, face_locations)
-        names = []
-        
-        # Loop over the facial embeddings
-        for encoding in face_encodings:
-            # Try to match each face in the input image to our known encodings
-            matches = face_recognition.compare_faces(known_encodings["encodings"],
-                encoding, tolerance=0.55)
-            # matches_06 = face_recognition.compare_faces(known_encodings["encodings"],
-            #     encoding)
-            # distances = face_recognition.face_distance(known_encodings["encodings"],
-            #     encoding)
-            # index_match = [k for k,v in enumerate(matches) if v == True]
-            # index_match_06 = [k for k,v in enumerate(matches) if v == True]
-            # distances_match_06 = [k for k,v in enumerate(distances) if v <= 0.60]
-            # distances_match_055 = [k for k,v in enumerate(distances) if v <= 0.55]
-            # print("-"*20)
-            # print("index_match = ", end='')
-            # print(index_match)
-            # print("index_match_06 = ", end='')
-            # print(index_match_06)
-            # print("distances = ", end='')
-            # print(distances)
-            # print("distances_match_06 = ", end='')
-            # print(distances_match_06)
-            # print("distances_match_055 = ", end='')
-            # print(distances_match_055)
-            # print("matches = ", end='')
-            # print(matches)
-            # print("matches_06 = ", end='')
-            # print(matches_06)
-            # print("-"*20)
-            name = "Unknown"
-
-            # Check to see if we have found a match
-            if True in matches:
-                # Find the indexes of all matched faces, and then initialize a
-                # dictionary to count the total number of times each face
-                # was matched
-                matched_indexes = [i for (i, b) in enumerate(matches) if b]
-                matched_counts = {}
-
-                # Loop over the matched indexes and count them for each
-                # recognized face
-                for i in matched_indexes:
-                    name = known_encodings["names"][i]
-                    matched_counts[name] = matched_counts.get(name, 0) + 1
-
-                # Determine the recognized face with the largest number
-                # of votes. Note that, in the event of an unlikely tie, Python
-                # will select first entry in the dictionary)
-                name = max(matched_counts, key=matched_counts.get)
-                
-                # If a new known face is recognized, add a key with its name
-                # to the dictionary that counts the number of times it appeared.
-                # If the key already exist, increment the number of times that
-                # subject has been recognizd
-                if name in known_count:
-                    known_count[name] += 1
-                else:
-                    known_count[name] = 1
-            elif name == "Unknown" and unknown_count < unknown_count_max:
-                    todayFolder = pathToUnknown + now.strftime("%Y-%m-%d")
-                    if not os.path.exists(todayFolder):
-                        os.makedirs(todayFolder)
-                        print(f"[INFO] folder for day {todayFolder[-10:]} created. "
-                            +"Unknown subjects detected will be added there")
-                    timestampUnknownSubject = now.strftime("%H%M%S.%f")
-                    currentCaptureFolder = todayFolder +"/" + timestampUnknownSubject
-                    if not os.path.exists(currentCaptureFolder):
-                        os.makedirs(currentCaptureFolder)
-                        print("[WARNING] unknown subject detected! Folder %s created"
-                            % timestampUnknownSubject)
-                    unknown_count += 1
-                    print("\__ capturing image %s/%s (%s.jpg)" % (unknown_count,
-                        unknown_count_max, unknown_count))
-                    cv2.imwrite(currentCaptureFolder+"/%s.jpg"
-                        % unknown_count, frame)
-            
-            # Update the list of names
-            names.append(name)
-
-        # Loop over the recognized faces
-        for ((top, right, bottom, left), name) in zip(face_locations, names):
-            # Rescale the face coordinates to the orginal ones
-            top = int(top * r)
-            right = int(right * r)
-            bottom = int(bottom * r)
-            left = int(left * r)
-
-            # Draw the recognized face name on the image. The name displayed
-            # is the name of the folder without the last 10 characters (the
-            # CWID)
-            cv2.rectangle(frame, (left, top), (right, bottom),
-                (0, 255, 0), 2)
-            y = top - 15 if top - 15 > 15 else top + 15
-            if name != "Unknown":
-                name = name[:-10].replace("_", " ")
-            cv2.putText(frame, name, (left, y), cv2.FONT_HERSHEY_SIMPLEX,
-                0.75, (0, 255, 0), 2)
-
         # Check to see if the output frame must be displayed to the screen
         if display > 0:
             cv2.imshow("Frame", frame)
@@ -480,7 +393,8 @@ def main(encodings, display, detection_method, known_count_max):
         elapsedTime = (datetime.now() - startTime).total_seconds()
 
     # Release handle to the webcam
-    video_stream.stop()
+    videoCamera.doRecon = False
+    videoCamera.__del__()
     cv2.destroyAllWindows()
 
     # Return the list of granted subjects
