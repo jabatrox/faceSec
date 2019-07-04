@@ -59,7 +59,10 @@ setup(
         'schedule',
         'flask',
         'Flask-SocketIO',
-        'gooey'
+        'gooey',
+        'authlib',
+        'google-api-python-client',
+        'google-auth'
     ],  # Optional
     entry_points={  # Optional
         'console_scripts': [

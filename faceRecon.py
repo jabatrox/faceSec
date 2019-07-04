@@ -5,8 +5,10 @@ This module can also be runned as an independent script.
 
 Usage examples:
     python faceRecon.py
-    python faceRecon.py --encodings myEncodings.pickle --display 0 --detection-method cnn
-Default params are '--encodings encodings.pickle --display 1 --detection-method hog'
+    python faceRecon.py --encodings myEncodings.pickle --display 0 \
+--detection-method cnn
+Default params are '--encodings encodings.pickle --display 1 \
+--detection-method hog'
 '''
 
 # Import the necessary packages
@@ -44,14 +46,16 @@ known_count = {}        # Dictionnary to count the number of times each known
 unknown_count = 0       # Number of times an unknown subject is detected
 unknown_count_max = 15  # Max number of pictures taken of an unknown subject
 granted = []            # List of subject with granted access
+grantedCWIDs = []       # List of the CWIDs from subject with granted access
 now = datetime.now()    # For the unknown folder path name
 maxElapsedTime = 15     # Max number of seconds with recognition mode on
 
 def startup():
-    global known_count, unknown_count, granted, now
+    global known_count, unknown_count, granted, grantedCWIDs, now
     known_count = {}
     unknown_count = 0
     granted = []
+    grantedCWIDs = [] 
     now = datetime.now()
 
 class VideoCamera(object):
@@ -111,10 +115,10 @@ class VideoCamera(object):
         self.known_encodings = pickle.loads(open(self.encodings, "rb").read())
     
     def get_frame(self):
-        # Read the frame from the camera
+        # Read a frame from the camera
         frame = self.read()
 
-        # If program is on recognition mode (from the main module, 'faceSec'),
+        # If program is on recognition mode (self.doRecon is set to True),
         # process the frame to detect and recognize faces
         if self.doRecon:
             frame = self.process_frame(frame)
@@ -126,10 +130,10 @@ class VideoCamera(object):
         return jpeg.tobytes()
 
     def get_frame_local(self):
-        # Read the frame from the camera
+        # Read a frame from the camera
         frame = self.read()
 
-        # If program is on recognition mode (from the main module, 'faceSec'),
+        # If program is on recognition mode (self.doRecon is set to True),
         # process the frame to detect and recognize faces
         if self.doRecon:
             frame = self.process_frame(frame)
@@ -265,10 +269,25 @@ class VideoCamera(object):
                 0.75, (0, 255, 0), 2)
         return frame
 
+
 def accessControl(detection_method, known_count_max):
+    '''
+    Keep count of the known and unknown subject in the frames, and returns the
+    the list of the ones having access once the desired `known_count_max` is 
+    reached.
+
+    :param `detection_method`: face detection model that is being used during  
+    the live recognition process: either `'hog'` or `'cnn'`. If it's `cnn`, 
+    the `known_count_max` will be divided by 2 to speed up the process.\n
+    :param `known_count_max`: number of times a subject must be recogised 
+    before granting access while using `'hog'` detection method (half of if is 
+    used for `'cnn'`).\n
+    :return The list of `granted CWIDs` of the recognized subjects received 
+    from the live recognition module.
+    '''
     # Pickup global variables
     global known_count, unknown_count, unknown_count_max
-    global granted, maxElapsedTime
+    global granted, grantedCWIDs, maxElapsedTime
 
     if detection_method == "cnn":                   # Lower value since CNN is
         known_count_max = int(known_count_max/2)    # slower but more accurate
@@ -293,6 +312,7 @@ def accessControl(detection_method, known_count_max):
                 for subject in granted:
                     subject_name = subject[:-10].replace("_", " ")
                     subject_CWID = subject[-9:]
+                    grantedCWIDs.append(subject_CWID)
                     print("Face recognized! Access granted to %s (CWID: %s)"
                         % (subject_name, subject_CWID))
                 break
@@ -304,7 +324,7 @@ def accessControl(detection_method, known_count_max):
     if not granted:
         print("[TIMEOUT] No known subjects recognized. Please, swipe your "+
             "card again")
-    return granted
+    return grantedCWIDs
 
 
 ############################################################################
@@ -339,7 +359,7 @@ def main(encodings, display, detection_method, known_count_max):
 
     # Pickup global variables and reset them
     global known_count, unknown_count, unknown_count_max
-    global granted, maxElapsedTime
+    global granted, grantedCWIDs, maxElapsedTime
     startup()
     if detection_method == "cnn":                   # Lower value since CNN is
         known_count_max = int(known_count_max/2)    # slower but more accurate
@@ -360,7 +380,7 @@ def main(encodings, display, detection_method, known_count_max):
         # Grab a frame from the threaded video stream
         frame = videoCamera.get_frame_local()
         videoCamera.doRecon = True
-        
+
         # Check to see if the output frame must be displayed to the screen
         if display > 0:
             cv2.imshow("Frame", frame)
@@ -385,6 +405,7 @@ def main(encodings, display, detection_method, known_count_max):
                 for subject in granted:
                     subject_name = subject[:-10].replace("_", " ")
                     subject_CWID = subject[-9:]
+                    grantedCWIDs.append(subject_CWID)
                     print("Face recognized! Access granted to %s (CWID: %s)"
                         % (subject_name, subject_CWID))
                 break
@@ -401,7 +422,7 @@ def main(encodings, display, detection_method, known_count_max):
     if not granted:
         print("[TIMEOUT] No known subjects recognized. Please, swipe your "+
             "card again")
-    return granted
+    return grantedCWIDs
 
 
 @Gooey(program_name="Face Recognition", image_dir='.')

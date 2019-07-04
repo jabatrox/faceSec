@@ -5,7 +5,7 @@ $(document).ready(function(){
     };
 
     // Connect to the socket server
-    var socket = io.connect('http://' + document.domain + ':' + location.port);
+    var socket = io.connect('https://' + document.domain + ':' + location.port, {secure: true});
     var connect_error_counter = 0;
     // Receive new welcome message from server
     socket.on('newMessage', function(msg) {

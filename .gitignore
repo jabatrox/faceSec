@@ -1,25 +1,3 @@
-# .pylintrc
-# camera.py
-# Encodings time for CNN.png
-# Encodings time for HOG.png
-# encodings4.pickle
-# encodings-cnn.pickle
-# encodings-hog.pickle
-# encodings-javier.pickle
-# encodings-random.pickle
-# facerec_from_webcam_faster.py
-# faceRecon.1.py
-# faceSec1.py
-# faceSec2.py
-# Facial-Recognition2.png
-# Facial-Recognition3.png
-# Facial-Recognition4.png
-# Facial-Recognition5.png
-# foU_ycnrH.zip
-# index.html
-# javier-soler.jpg
-# pi_face_recognition.py
-# recognize_faces_video.py
 .git/
 .vscode/
 __pycache__/
@@ -27,5 +5,10 @@ Temp/
 images/unknown_people/
 Testing pictures/
 pi-face-recognition/
+certificates/*
+!certificates/.gitkeep
+OAuth2.txt
+google_auth.json
+access.json
 haarcascade_frontalface_default.xml
 accesslog.txt

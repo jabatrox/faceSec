@@ -3,15 +3,19 @@ Generate a file of encodings from a dataset of images of faces.
 
 It is important to note that this task requires a high level of performance.
 Therefore:
-    - When encoding on laptop, desktop, or GPU (slower, more accurate): use `cnn` detection method
-    - When encoding on Raspberry Pi or just with CPU (no GPU) (faster, less accurate): use `hog` detection method
+    - When encoding on laptop, desktop, or GPU (slower, more accurate): use \
+`cnn` detection method
+    - When encoding on Raspberry Pi or just with CPU (no GPU) (faster, less \
+accurate): use `hog` detection method
 
 This module can also be runned as an independent script.
 
 Usage examples:
     python faceEncode.py
-    python faceEncode.py --dataset dataset --encodings myEncodings.pickle --detection-method cnn
-Default params are '--dataset images/known_people --encodings encodings.pickle --detection-method hog'
+    python faceEncode.py --dataset dataset --encodings myEncodings.pickle \
+--detection-method cnn
+Default params are '--dataset images/known_people --encodings encodings.pickle \
+--detection-method hog'
 '''
 
 # Import the necessary packages

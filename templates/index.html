@@ -1,81 +1,74 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-    <meta charset="UTF-8">
-    <title>FaceSec - The Facial Recognition Secure Access</title>
-    <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
-    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/bootstrap.min-4.3.1.css') }}">
-    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script> -->
-    <script type="text/javascript" src="{{ url_for('static', filename='js/lib/jquery.min-3.4.1.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/lib/socket.io-2.0.3.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/lib/bootstrap.min-4.3.1.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/app.js') }}"></script>
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <title>FaceSec - The Facial Recognition Secure Access</title>
+        <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+        <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/style.css') }}">
+        <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/bootstrap.min-4.3.1.css') }}">
+        <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script> -->
+        <script type="text/javascript" src="{{ url_for('static', filename='js/lib/jquery.min-3.4.1.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/lib/socket.io-2.0.3.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/lib/bootstrap.min-4.3.1.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/app.js') }}"></script>
+    </head>
 
-<body>
-    <div id="heading">
-        <!-- <img style="margin: 0px 10px 15px 0px; 
-            height: 5%; width: 5%; vertical-align:middle;" 
-            src="{{ url_for('static', filename='img/faceSec.png') }}"
-            alt="Image" class="logo"> -->
-        <img id="logo"
-            src="{{ url_for('static', filename='img/faceSec.png') }}"
-            alt="Image" class="logo">
-        {% if userType == "admin" %}
-        <span>FaceSec's Administrator</span>
-        {% else %}
-        <span>Welcome to FaceSec</span>
-        {% endif %}
-    </div>
-    <div id="adminPanel">
-        <h3>Live Video Streaming</h3>
-        <div class="container-fluid" style="min-height:100%; width:80%">
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
-                    {% if messages %}
-                        {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible" role="alert">
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        <strong style="text-transform: uppercase;">{{ category }}:</strong> {{ message }}
-                        </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-                
-                {% block body %}{% endblock %}
-        </div>
-        <div>
-            <img id="videofeed" src="{{ url_for('video_feed') }}" alt="Video streaming should be here">
+    <body>
+        <div id="heading">
+            <img id="logo"
+                src="{{ url_for('static', filename='img/faceSec.png') }}"
+                alt="Image" class="logo">
             {% if userType == "admin" %}
-            <div id="actions">
-                <span>ADMINISTRATOR ACTIONS:</span>
-                <form method="post" action="/admin/">
-                    <button class="btn" type="submit" name="startProcess">Start encodings<br>update process</button>
-                    <button class="btn" type="submit" name="stopProcess">Stop encodings<br>update process</button>
-                    <button class="btn" type="submit" name="forceUpdateHOG">Force encodings<br>update with HOG</button>
-                    <button class="btn" type="submit" name="forceUpdateCNN">Force encodings<br>update with CNN</button>
-                    <button class="btn" id="quit" type="submit" name="quit"><strong>Quit</strong></button>
-                </form>
-                <!-- <form method="post" id="quit" action="/admin/">
-                    <button class="btn" type="submit" name="quit">Quit</button>
-                </form> -->
-                <!-- Alternative style for admin buttons: all in one column, one after the other
-                    <form method="post" action="/admin/">
-                    <button class="btn" type="submit" name="forceUpdate">Force encodings update</button><br /><br />
-                    <button class="btn" type="submit" name="startProcess">Start encodings update process</button><br /><br />
-                    <button class="btn" type="submit" name="stopProcess">Stop encodings update process</button><br /><br />
-                    <button class="btn" type="submit" name="quit">Quit</button>
-                </form> -->
-            </div>
-        {% endif %}
+            <span>FaceSec's Administrator</span>
+            <a class="btn btn-light" href="{{ url_for('google_auth.logout') }}">Logout</a>
+            {% else %}
+            <span>Welcome to FaceSec</span>
+            <a class="btn btn-light" href="{{ url_for('google_auth.login') }}">Login</a>
+            {% endif %}
         </div>
-    </div>
-    <span id="welcome"></span>
-</body>
+        <div id="adminPanel">
+            <h3>Live Video Streaming</h3>
+            <div class="g-signin2"></div>
+            <div class="container-fluid" style="min-height:100%; width:80%">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
+                        {% if messages %}
+                            {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible" role="alert">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            {% if userType == "admin" %}
+                            <strong style="text-transform: uppercase;">{{ category }}:</strong> {{ message }}
+                            {% else %}
+                            <strong style="text-transform: uppercase;">error:</strong> {{ message }}
+                            {% endif %}
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    {% block body %}{% endblock %}
+            </div>
+            <div>
+                <img id="videofeed" src="{{ url_for('video_feed') }}" alt="Video streaming should be here">
+                {% if userType == "admin" %}
+                <div id="actions">
+                    <span>ADMINISTRATOR ACTIONS:</span>
+                    <form method="post" action="/admin/">
+                        <button class="btn" type="submit" name="startProcess">Start encodings<br>update process</button>
+                        <button class="btn" type="submit" name="stopProcess">Stop encodings<br>update process</button>
+                        <button class="btn" type="submit" name="forceUpdateHOG">Force encodings<br>update with HOG</button>
+                        <button class="btn" type="submit" name="forceUpdateCNN">Force encodings<br>update with CNN</button>
+                        <button class="btn" id="quit" type="submit" name="quit"><strong>Quit</strong></button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <span id="welcome"></span>
+    </body>
 
 </html>

@@ -11,12 +11,21 @@ import multiprocessing
 import schedule
 import time
 import sys
-import faceEncode
-import faceRecon
 import logging
 
+from authlib.client import OAuth2Session
+import google.oauth2.credentials
+import googleapiclient.discovery
 
-############################## ARGUMENT PARSER ##############################
+import faceEncode
+import faceRecon
+import accessmanager
+import google_auth
+
+# import functools
+
+
+############################### ARGUMENT PARSER ###############################
 
 # Construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
@@ -49,22 +58,32 @@ ap.add_argument("-Y", "--display", type=int, default=1,
 args = vars(ap.parse_args())
 
 
-###################### FLASK AND SOCKET.IO INITIALIZER #####################
+####################### FLASK AND SOCKET.IO INITIALIZER ######################
 
 # Start and config Flask and Socket.io app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'This Is My Secret!'
+app.register_blueprint(google_auth.app)
+# app.config.update(
+#     SESSION_COOKIE_SECURE=True,
+#     SESSION_COOKIE_HTTPONLY=True,
+#     SESSION_COOKIE_SAMESITE='Lax',
+# )
 socketio = SocketIO(app)
 
 # To avoid seeing all the GET/POST requests on the terminal
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
-############################# GENERAL VARIABLES ############################
+
+############################## GENERAL VARIABLES #############################
 
 # Some basic variables
-accepted_cards = ['1234', '5678']
-received_card_number = ""
+received_card_number = ""   # Empty string to store the card number received
+granted_cards = accessmanager.getAllGrantedCardIDs()# List of cards allowed
+# granted_CWIDs = accessmanager.getAllGrantedCWIDs()  # List of CWIDs allowed
+admin_users = accessmanager.getAllAdminIDs()        # List of admin Google IDs
+# accessData = accessmanager.loadJsonAccessFile("access.json")
 
 # Create the videoCamera object with the parsed arguments
 if not args["local"]:
@@ -73,7 +92,7 @@ if not args["local"]:
     videoCam_started = False
 
 
-####################### UPDATE WELCOME MESSAGE CLASS #######################
+####################### 'UPDATE WELCOME MESSAGE' CLASS #######################
 
 updateWelcome_thread = threading.Thread()
 # thread_stop_event = threading.Event()
@@ -82,7 +101,7 @@ thread_display_name.set()
 class updateWelcomeThread(Thread):
     '''
     Updates the name of the person who has swiped the card (if any),
-    otherwise shows "Waiting for user..."
+    otherwise it shows "Waiting for user...".
     '''
     def __init__(self):
         self.delay = 1
@@ -93,8 +112,10 @@ class updateWelcomeThread(Thread):
             msg = "Waiting for user..."
 
             # Update name only if it has changed (someone has swiped the card)
-            if received_card_number in accepted_cards:
-                msg = f"Hello {received_card_number}! Please now place yourself in front of the camera for face recognition"
+            if received_card_number in granted_cards:
+                name = accessmanager.getGrantedName(received_card_number)
+                msg = f"Hello {name}! Please now place yourself in front of "\
+                    "the camera for face recognition"
             if thread_display_name.isSet():
                 socketio.emit('newMessage', {'message': msg})
                 thread_display_name.clear()
@@ -107,7 +128,7 @@ class updateWelcomeThread(Thread):
         self.updateWelcomeGenerator()
 
 
-########################### FUNCTIONS DEFINITION ###########################
+############################ FUNCTIONS DEFINITION ############################
 
 def launchUpdateEncodings():
     '''
@@ -126,6 +147,7 @@ def launchUpdateEncodings():
             +"ending...", end=" ")
         schedule.clear()
         print("[DONE]")
+
 
 def updateEncodings(dataset, encodings, encode_detection_method):
     '''
@@ -209,23 +231,32 @@ def liveFaceRecon(encodings, display, recon_detection_method, count_recon):
     return granted
 
 
-def accesslog(received_card_number, onDB, granted):
+def accesslog(received_card_number, onDB, faceRecognized, granted):
     '''
     Log for the door access. Keeps record of whether the attemp was successful
-    or unsuccessful, and the reason for it in the latter case
+    or unsuccessful, and the reason for it in the latter case.
 
     :param `received_card_number`: number of the card swiped at the door.\n
     :param `onDB`: boolean of whether or not the card number is on the list 
     of accepted cards.\n
+    :param `faceRecognized`: boolean of whether or not at least one face has  
+    been recognized during the live recognition process.\n
     :param `granted`: boolean of whether the access was granted or denied.
     '''
-    # Save a different message depending if the user attempt was successful or
-    # not
-    if granted:
-        with open("accesslog.txt", "a") as accesslogfile:
-            print(f"Access granted on: {datetime.now()} "
-                +f"for card ID '{received_card_number}'", 
-                file=accesslogfile)
+    # Save a different message depending if the user attempt to access was 
+    # successful or not
+    if faceRecognized:
+        if granted:
+            with open("accesslog.txt", "a") as accesslogfile:
+                print(f"Access granted on: {datetime.now()} "
+                    +f"for card ID '{received_card_number}'", 
+                    file=accesslogfile)
+        else:
+            with open("accesslog.txt", "a") as accesslogfile:
+                print(f"Access refused on: {datetime.now()} "
+                    +f"for card ID '{received_card_number}' "
+                    +"(not recognized on camera)", 
+                    file=accesslogfile)
     elif (not granted) and onDB:
         with open("accesslog.txt", "a") as accesslogfile:
             print(f"Access refused on: {datetime.now()} "
@@ -240,6 +271,17 @@ def accesslog(received_card_number, onDB, granted):
                 file=accesslogfile)
 
 
+def getCardNumber():
+    '''
+    Receive from the Raspberry Pi the number of the card that the user has 
+    swiped on the reader.
+
+    :return The `card number`.
+    '''
+    card = input("Insert card number: ")
+    return card
+
+
 def waitForCard():
     '''
     Waits for an input of the access card swiping and, if accepted, launches 
@@ -248,30 +290,46 @@ def waitForCard():
     time.sleep(5) # Delay for the encodings update process to start
     while True:
         global received_card_number
-        received_card_number = input("Insert card number: ")
+        received_card_number = getCardNumber()
         # received_card_number = "1234"
-        if received_card_number not in accepted_cards:
-            print("Access refused!\n")
-            accesslog(received_card_number, False, False)
+        if received_card_number not in granted_cards:
+            print("[ERROR] swiped card is not on the DB")
+            print("[FAIL] access refused\n")
+            accesslog(received_card_number, False, False, False)
         else:
             # Trigger the tread event to show the name of the person who
-            # swipped the card
+            # swipped the card on the website
             thread_display_name.set()
-            print("Card accepted. Please now place yourself in front of the "+
-                "camera for face recognition")
+            name = accessmanager.getGrantedName(received_card_number)
+            print(f"Card for {name} accepted. Please now place yourself in "+
+                "front of the camera for facial recognition")
             granted = liveFaceRecon(args["encodings"], args["display"],
                 args["recon_detection_method"], args["count_recon"])
-            if granted:
-                print("[SUCCESS] you can now enter the lab")
-                accesslog(received_card_number, True, True)
-            else:
-                accesslog(received_card_number, True, False)
+            received_CWID = accessmanager.getCWIDFromCardID(received_card_number)
+            # myindexes = [i for (i, cwid) in enumerate(granted) if cwid == received_CWID]
+            if received_CWID in granted:
+                print("[SUCCESS] face recognition and swiped card match")
+                print("[SUCCESS] access granted. You can now enter the lab\n")
+                accessmanager.setGrantedLastAccess(received_card_number, 
+                    datetime.now())
+                accesslog(received_card_number, True, True, True)
+            elif granted and not received_CWID in granted:
+                print("[ERROR] face recognition and swiped card don't match!")
+                print("[FAIL] access refused\n")
+                accesslog(received_card_number, True, True, False)
+            elif not granted:
+                print("[ERROR] no known subject has been recognized")
+                print("[FAIL] access refused\n")
+                accesslog(received_card_number, True, False, False)
             received_card_number = ""
 
 
-############################### MAIN PROGRAM ###############################
+################################ MAIN PROGRAM ################################
 
 def shutdown_server():
+    '''
+    Shutdown the server.
+    '''
     func = request.environ.get('werkzeug.server.shutdown')
     if func is None:
         raise RuntimeError('Not running with the Werkzeug Server')
@@ -285,59 +343,99 @@ def index():
 
 @app.route("/admin/", methods=['GET', 'POST'])
 def admin():
-    global encodings_process
-    if request.method == 'POST':
-        if "forceUpdateHOG" in request.form:
-            forced_encodings_HOG_process = multiprocessing.Process(name='Encodings',
-                target = updateEncodings,
-                args=(args["dataset"], args["encodings"], "hog"))
-            forced_encodings_HOG_process.daemon = True
-            forced_encodings_HOG_process.start()
-            forced_encodings_HOG_process.join()
-            flash("Encodings succesfully updated with 'HOG'", 'success')
-        elif "forceUpdateCNN" in request.form:
-            forced_encodings_CNN_process = multiprocessing.Process(name='Encodings',
-                target = updateEncodings,
-                args=(args["dataset"], args["encodings"], "cnn"))
-            forced_encodings_CNN_process.daemon = True
-            forced_encodings_CNN_process.start()
-            forced_encodings_CNN_process.join()
-            flash("Encodings succesfully updated with 'CNN'", 'success')
-        elif "startProcess" in request.form:
-            if not encodings_process.is_alive():
-                message = "[INFO] Encodings update process is started and running"
-                flash(message[6:], 'info')
-                print(message)
-                encodings_process = multiprocessing.Process(
-                    target = launchUpdateEncodings)
-                encodings_process.start()
-            else:
-                message = "[WARNING] Encodings update process is already running"
-                flash(message[9:], 'warning')
-                print(message)
-        elif "stopProcess" in request.form:
-            message = "[INFO] Encodings update process has been stopped"
-            flash(message[6:], 'info')
-            print(message)
-            encodings_process.terminate()
-            time.sleep(0.1)
-        elif "quit" in request.form:
-            if encodings_process.is_alive():
-                print("[INFO] stopping encodings update process before "
-                    +"exiting...", end=" ")
-                encodings_process.terminate()
-                time.sleep(0.1)
-                print("[DONE]")
-            print("[FINISHED] program existing")
-            shutdown_server()
-            return 'Server shutting down...'
-    elif request.method == 'GET':
-        print("[INFO] admin website loaded")
-    return render_template('index.html', userType="admin")
+    if google_auth.is_logged_in():
+        # Get information from the user logged in
+        user_info = google_auth.get_user_info()
+
+        # If the user is in de DB of admins, proceed to admin's website.
+        # Otherwise, logout, display an error flash message and redirect to
+        # root (general users' site)
+        if user_info['id'] in accessmanager.getAdminIDs():
+            # Update timestamp of last access for the logged in administrator
+            accessmanager.setAdminLastAccess(user_info['id'], datetime.now())
+            global encodings_process
+            # Actions on each button pressed
+            if request.method == 'POST':
+                # Force encodings update with 'HOG'
+                if "forceUpdateHOG" in request.form:
+                    forced_encodings_HOG_process = multiprocessing.Process(
+                        name='Encodings',
+                        target = updateEncodings,
+                        args=(args["dataset"], args["encodings"], "hog"))
+                    forced_encodings_HOG_process.daemon = True
+                    forced_encodings_HOG_process.start()
+                    forced_encodings_HOG_process.join()
+                    flash("Encodings succesfully updated with 'HOG'", 'success')
+                # Force encodings update with 'CNN'
+                elif "forceUpdateCNN" in request.form:
+                    forced_encodings_CNN_process = multiprocessing.Process(
+                        name='Encodings',
+                        target = updateEncodings,
+                        args=(args["dataset"], args["encodings"], "cnn"))
+                    forced_encodings_CNN_process.daemon = True
+                    forced_encodings_CNN_process.start()
+                    forced_encodings_CNN_process.join()
+                    flash("Encodings succesfully updated with 'CNN'", 'success')
+                # Start the automatic encodings update process, if it's not 
+                # already running
+                elif "startProcess" in request.form:
+                    if not encodings_process.is_alive():
+                        message = "[INFO] Encodings update process is "\
+                            "started and running"
+                        flash(message[6:], 'info')
+                        print(message)
+                        encodings_process = multiprocessing.Process(
+                            target = launchUpdateEncodings)
+                        encodings_process.start()
+                    else:
+                        message = "[WARNING] Encodings update process is "\
+                            "already running"
+                        flash(message[9:], 'warning')
+                        print(message)
+                # Stop the automatic encodings update process, if it's not 
+                # already stopped
+                elif "stopProcess" in request.form:
+                    if encodings_process.is_alive():
+                        message = "[INFO] Encodings update process is stopped"
+                        flash(message[6:], 'info')
+                        print(message)
+                        encodings_process.terminate()
+                        time.sleep(0.1)
+                    else:
+                        message = "[WARNING] Encodings update process is "\
+                            "been stopped"
+                        flash(message[9:], 'warning')
+                        print(message)
+                # Shutdown the webserver and end the program
+                elif "quit" in request.form:
+                    if encodings_process.is_alive():
+                        print("[INFO] stopping encodings update process "
+                            +"before exiting...", end=" ")
+                        encodings_process.terminate()
+                        time.sleep(0.1)
+                        print("[DONE]")
+                    print("[FINISHED] program existing")
+                    shutdown_server()
+                    return '<h3>Server shutted down</h3>'
+            elif request.method == 'GET':
+                print("[INFO] admin website loaded")
+            return render_template('index.html', userType="admin")
+        else:
+            print(f"[WARNING] Account '{user_info['name']}' with Google ID "
+                +f"'{user_info['id']}' tried to access administrator's site "
+                +f"on {datetime.now()}")
+            flash("User not accepted (no admin rights)", 'danger')
+            return redirect('/google/logout')
+    flash("User not logged in. Please login to access administrator's site", 'danger')
+    return redirect('/')
 
 
 @socketio.on('newMessage')
 def updateWelcome():
+    '''
+    Launch thread that will manage the real-time update of the welcome message
+    shown to the user (default one and on card swipe)
+    '''
     global updateWelcome_thread
     if not updateWelcome_thread.isAlive():
         updateWelcome_thread = updateWelcomeThread()
@@ -377,19 +475,18 @@ def video_feed():
 def add_header(r):
     """
     Add headers to both force latest IE rendering engine or Chrome Frame,
-    and also to cache the rendered page for 10 minutes.
+    and also for not to cache the rendered page.
     """
     r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     r.headers["Pragma"] = "no-cache"
     r.headers["Expires"] = "0"
     r.headers['Cache-Control'] = 'public, max-age=0'
+    # r.headers['X-Frame-Options'] = 'DENY'
+    # r.headers['X-XSS-Protection'] = '1; mode=block'
+    # r.headers['X-Content-Type-Options'] = 'nosniff'
     return r
 
 if __name__ == "__main__":
-    # Initialize some variables
-    accepted_cards = ['1234', '5678']
-    received_card_number = ""
-
     # Logging config
     # logging.basicConfig(level=logging.DEBUG, filename="logfile", filemode="a+",
     #     format="%(levelname)-15s: %(asctime)-8s %(message)s")
@@ -407,10 +504,9 @@ if __name__ == "__main__":
         
         if not args["local"]: # Start as Fask/socket.io app, with webserver
             # app.run(host='0.0.0.0', port=3000)#, debug=True)
-            socketio.run(app, host='0.0.0.0', port=3000)#, processes=1, debug=True)
-            # flask_thread = threading.Thread(target=flask_thread)
-            # flask_thread.setDaemon(True)
-            # flask_thread.start()
+            context = ('certificates/cert-faceSec.pem', 'certificates/key-faceSec.pem')
+            socketio.run(app, host='0.0.0.0', port=3000, ssl_context=context)
+            #, processes=1, debug=True)
         else: # Run in local
             print("Script running in local")
             import cv2
