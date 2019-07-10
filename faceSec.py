@@ -13,9 +13,9 @@ import time
 import sys
 import logging
 
-from authlib.client import OAuth2Session
-import google.oauth2.credentials
-import googleapiclient.discovery
+# from authlib.client import OAuth2Session
+# import google.oauth2.credentials
+# import googleapiclient.discovery
 
 import faceEncode
 import faceRecon
@@ -350,7 +350,7 @@ def admin():
         # If the user is in de DB of admins, proceed to admin's website.
         # Otherwise, logout, display an error flash message and redirect to
         # root (general users' site)
-        if user_info['id'] in accessmanager.getAdminIDs():
+        if user_info['id'] in accessmanager.getAllAdminIDs():
             # Update timestamp of last access for the logged in administrator
             accessmanager.setAdminLastAccess(user_info['id'], datetime.now())
             global encodings_process
