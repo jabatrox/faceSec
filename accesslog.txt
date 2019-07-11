@@ -418,3 +418,12 @@ Access refused on: 2019-07-03 09:27:01.307397 for card ID '5678' (not recognized
 Access refused on: 2019-07-03 09:27:23.940074 for card ID '1234' (no face detection)
 Access refused on: 2019-07-03 09:27:42.886017 for card ID '11' (card ID not accepted)
 Access granted on: 2019-07-03 09:28:02.438074 for card ID '1234'
+Access refused on: 2019-07-05 05:36:25.487075 for card ID 'conda activate base' (card ID not accepted)
+Access refused on: 2019-07-05 05:37:40.144458 for card ID '111' (card ID not accepted)
+Access refused on: 2019-07-05 05:38:01.794670 for card ID '4321' (no face detection)
+Access refused on: 2019-07-05 05:38:21.082288 for card ID '5678' (no face detection)
+Access refused on: 2019-07-05 05:38:41.753302 for card ID '1234' (no face detection)
+Access granted on: 2019-07-05 05:39:00.852285 for card ID '1234'
+Access refused on: 2019-07-10 15:35:37.505770 for card ID '1234' (no face detection)
+Access granted on: 2019-07-10 15:36:45.115100 for card ID '1234'
+Access refused on: 2019-07-10 16:01:13.689333 for card ID '5678' (not recognized on camera)
