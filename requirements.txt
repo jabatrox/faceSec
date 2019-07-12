@@ -4,13 +4,25 @@
 #
 #    pip-compile setup.py
 #
+asn1crypto==0.24.0        # via cryptography
+authlib==0.11
+cachetools==3.1.1         # via google-auth
+certifi==2019.6.16        # via requests
+cffi==1.12.3              # via cryptography
+chardet==3.0.4            # via requests
 click==7.0                # via face-recognition, flask
+cryptography==2.7         # via authlib
 dlib==19.17.0
 face-recognition-models==0.3.0  # via face-recognition
 face-recognition==1.2.3
 flask-socketio==4.1.0
 flask==1.0.3
 gooey==1.0.2
+google-api-python-client==1.7.9
+google-auth-httplib2==0.0.3  # via google-api-python-client
+google-auth==1.6.3
+httplib2==0.13.0          # via google-api-python-client, google-auth-httplib2
+idna==2.8                 # via requests
 imutils==0.5.2
 itsdangerous==1.1.0       # via flask
 jinja2==2.10.1            # via flask
@@ -20,9 +32,16 @@ opencv-contrib-python==4.1.0.25
 pathlib2==2.3.4
 pillow==6.0.0             # via face-recognition, gooey, wxpython
 psutil==5.6.3             # via gooey
+pyasn1-modules==0.2.5     # via google-auth
+pyasn1==0.4.5             # via pyasn1-modules, rsa
+pycparser==2.19           # via cffi
 python-engineio==3.8.1    # via python-socketio
 python-socketio==4.1.0    # via flask-socketio
+requests==2.22.0          # via authlib
+rsa==4.0                  # via google-auth
 schedule==0.6.0
-six==1.12.0               # via pathlib2, python-engineio, python-socketio, wxpython
+six==1.12.0               # via cryptography, google-api-python-client, google-auth, pathlib2, python-engineio, python-socketio, wxpython
+uritemplate==3.0.0        # via google-api-python-client
+urllib3==1.25.3           # via requests
 werkzeug==0.15.4          # via flask
 wxpython==4.0.6           # via gooey
