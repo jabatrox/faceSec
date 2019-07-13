@@ -194,6 +194,7 @@ if __name__ == "__main__":
         print("[ERROR] exception raised while instantiating the RPi. This "
             +"is probably to pigpio daemon not running.\n\tTo start it, run "
             +"'sudo pigpiod'")
+        sys.exit(1)
     
     # Infinite loop to keep it running unless a KeyboardInterrupt is raised
     while True:
@@ -204,4 +205,4 @@ if __name__ == "__main__":
             wiegand_card.cancel()
             pi.stop()
             print("DONE")
-            sys.exit(1)
+            sys.exit(0)

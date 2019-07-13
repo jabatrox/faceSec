@@ -442,7 +442,7 @@ def argParser():
         help="input path to serialized db of facial encodings "+
         "\ndefault: 'encodings.pickle'")
     ap.add_argument("-u", "--unknown",  type=str, default="images/unknown_people",
-    help="path to output directory of unknown face images.\ndefault: "+
+        help="path to output directory of unknown face images.\ndefault: "+
         "'images/unknown_people'")
     ap.add_argument("-y", "--display", type=int, default=1,
         help="whether or not to display output frame to screen during live "+
