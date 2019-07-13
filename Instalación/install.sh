@@ -23,13 +23,14 @@ cmake .. -DDLIB_USE_CUDA=1 -DUSE_AVX_INSTRUCTIONS=1
 cmake --build .
 cd ..
 sudo python3 setup.py install --yes USE_AVX_INSTRUCTIONS --yes DLIB_USE_CUDA --compiler-flags "-DCUDA_HOST_COMPILER=/usr/bin/gcc-7"
-sudo pip3 install face_recognition
-sudo pip3 install imutils
-sudo pip3 install schedule
-sudo pip3 install flask
-sudo pip3 install Flask-SocketIO
-sudo pip3 install gooey
-sudo pip3 install authlib google-api-python-client google-auth
+#sudo pip3 install face_recognition
+#sudo pip3 install imutils
+#sudo pip3 install schedule
+#sudo pip3 install flask
+#sudo pip3 install Flask-SocketIO
+#sudo pip3 install gooey
+#sudo pip3 install authlib google-api-python-client google-auth
+pip3 install -r requirements.txt
 cd ~/
 git clone https://github.com/jabatrox/faceSec
 echo -e "\nInstallation finished!"

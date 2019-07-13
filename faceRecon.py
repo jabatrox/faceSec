@@ -38,7 +38,7 @@ import imutils
 # face_encodings = []
 # face_names = []
 # process_this_frame = True
-pathToUnknown = "images/unknown_people/"
+# pathToUnknown = "images/unknown_people/"
 known_count = {}        # Dictionnary to count the number of times each known
                         # subject recognized is detected
 # known_count_max = 15    # Number of times a subject must be recogised
@@ -72,15 +72,22 @@ class VideoCamera(object):
     (and frames should be processed) (default: `False`).\n
     '''
 
-    def __init__(self, encodings, detection_method, known_count_max=15,
-        doRecon=False):
+    def __init__(self, pathToUnknown, encodings, detection_method,
+        known_count_max=15, doRecon=False):
         print("############### OPEN CAMERA ###############")
-        # NOTE: If using pure OpenCV (instead of 'VideoStream' from imutils.video),
-        # uncomment the following line and comment the one from the 'start'
-        # function saying "self.stream = VideoStream(src=0)". Also, in the
-        # 'def __del__(self):' function, uncomment the first line and comment
-        # the second one
+        ## NOTE: If using pure OpenCV (instead of 'VideoStream' from
+        ## imutils.video), uncomment the following line and comment the one
+        ## from the 'start' function saying "self.stream = VideoStream(src=0)".
+        ## Also, in the 'def __del__(self):' function, uncomment the first line
+        ## and comment the second one
         # self.video_stream = cv2.VideoCapture(0)
+
+        # Check if the input path for the dataser folder has "/" at the end, and
+        # remove it if does
+        if pathToUnknown[-1:] == "/":
+            self.pathToUnknown = pathToUnknown[:-1]
+        else:
+            self.pathToUnknown = pathToUnknown
         self.encodings = encodings
         self.detection_method = detection_method
         self.known_count_max = known_count_max
@@ -95,7 +102,7 @@ class VideoCamera(object):
 		# Start capturing the video stream from device 0
         print("[INFO] starting video stream...", end =" ")
         self.stream = VideoStream(src=0)
-        print("[DONE]")
+        print("DONE")
         return self.stream.start()
     
     def read(self):
@@ -227,7 +234,7 @@ class VideoCamera(object):
             # '%pathToUnknown%/[currentDate]/[currentTimestamp]'
             # Ex: 'images\unknown_people\2019-06-25\105122.890024
             elif name == "Unknown" and unknown_count < unknown_count_max:
-                todayFolder = pathToUnknown + now.strftime("%Y-%m-%d")
+                todayFolder = self.pathToUnknown + now.strftime("%Y-%m-%d")
                 # If folder for current date (today) doesn't exit, create
                 # it
                 if not os.path.exists(todayFolder):
@@ -264,7 +271,7 @@ class VideoCamera(object):
                 (0, 255, 0), 2)
             y = top - 15 if top - 15 > 15 else top + 15
             if name != "Unknown":
-                name = name[:-10].replace("_", " ")
+                name = name[10:].replace("_", " ")
             cv2.putText(frame, name, (left, y), cv2.FONT_HERSHEY_SIMPLEX,
                 0.75, (0, 255, 0), 2)
         return frame
@@ -310,8 +317,8 @@ def accessControl(detection_method, known_count_max):
                 if float(v) == known_count_max]
             if granted:
                 for subject in granted:
-                    subject_name = subject[:-10].replace("_", " ")
-                    subject_CWID = subject[-9:]
+                    subject_name = subject[10:].replace("_", " ")
+                    subject_CWID = subject[:9]
                     grantedCWIDs.append(subject_CWID)
                     print("Face recognized! Access granted to %s (CWID: %s)"
                         % (subject_name, subject_CWID))
@@ -403,8 +410,8 @@ def main(encodings, display, detection_method, known_count_max):
                 if float(v) == known_count_max]
             if granted:
                 for subject in granted:
-                    subject_name = subject[:-10].replace("_", " ")
-                    subject_CWID = subject[-9:]
+                    subject_name = subject[10:].replace("_", " ")
+                    subject_CWID = subject[:9]
                     grantedCWIDs.append(subject_CWID)
                     print("Face recognized! Access granted to %s (CWID: %s)"
                         % (subject_name, subject_CWID))
@@ -434,6 +441,9 @@ def argParser():
         default="encodings.pickle",
         help="input path to serialized db of facial encodings "+
         "\ndefault: 'encodings.pickle'")
+    ap.add_argument("-u", "--unknown",  type=str, default="images/unknown_people",
+    help="path to output directory of unknown face images.\ndefault: "+
+        "'images/unknown_people'")
     ap.add_argument("-y", "--display", type=int, default=1,
         help="whether or not to display output frame to screen during live "+
         "recognition\ndefault: `1` (yes)")

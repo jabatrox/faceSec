@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 '''
 Read Wiegand codes of an arbitrary length, and return the string of bits.
 
@@ -8,8 +7,14 @@ Original script from the pigpio library:
 https://abyz.me.uk/rpi/pigpio/python.html
 '''
 
+from argparse import RawTextHelpFormatter
+from gooey import Gooey
 import sys
 import pigpio
+import base64
+import json
+import requests
+import argparse
 
 class decoder:
     '''
@@ -112,7 +117,7 @@ def processCode(bitCount, value, cardID_bits):
     facilityCode = 0
     cardCode = 0
 
-    print(f"bitCount={bitCount}, value={value}, cardBits={cardBits}")
+    print(f"bitCount={bitCount}, value={value}, cardBits={cardID_bits}")
     cardID_binary_list = list(cardID_bits)
     if bitCount == 35:
         # Facility code = bits 3 to 14
@@ -133,22 +138,62 @@ def processCode(bitCount, value, cardID_bits):
         print("Unable to decode.")
 
     # Send a request to faceSec.py running program
-    sendRequest(cardID_bits)
+    sendRequest(cardID_bits, facilityCode, cardCode)
 
 
-def sendRequest(cardID_bits):
-    # TODO: try to send, catch if error while sending
-    pass
+def sendRequest(cardID_bits, facilityCode, cardCode):
+    # Converting the cardID string of bits to bytes, and encode it in base64
+    cardID_bits_bytes = base64.b64encode(str.encode(cardID_bits))
+    facilityCode_bytes = base64.b64encode(str.encode(str(facilityCode)))
+    cardCode_bytes = base64.b64encode(str.encode(str(cardCode)))
+    # URL of the server, parsed from the arguments
+    ipaddr = args["address"]
+    port = str(args["port"])
+    url = "https://" + ipaddr + ":" + port
+    # Payload to send in JSON format
+    payload = {
+        "cardID": cardID_bits_bytes.decode(),
+        "facilityCode": facilityCode_bytes.decode(),
+        "cardCode": cardCode_bytes.decode()
+        }
+    print("Sending HTTP request...", end = " ")
+    try:
+        r = requests.post(url, json=payload, verify=False)
+        print(r)
+    except ValueError:
+        print("[ERROR] exception raised while sending POST request")
+    print("DONE")
+
+
+@Gooey(program_name="Face Recognition", image_dir='.')
+def argParser():
+    # Construct the argument parser and parse the arguments
+    ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
+    ap.add_argument("-a", "--address", type=str, required=True,
+        help="IP address of the server where the card details will be sent ")
+    ap.add_argument("-p", "--port", type=int, required=True,
+        help="port where the destination server is running")
+    global args
+    args = vars(ap.parse_args())
+    return args
 
 
 if __name__ == "__main__":
+    # Call the argument parser function
+    argParser()
+
     # Initialize some variables
     facilityCode = 0    # Decoded facility code
     cardCode = 0        # Decoded card code
 
     # Start the Raspberry Pi and the decoding process
-    pi = pigpio.pi()
-    wiegand_card = decoder(pi, 14, 15, processCode)
+    try:
+        pi = pigpio.pi()
+        wiegand_card = decoder(pi, 14, 15, processCode)
+    except ValueError:
+        print("[ERROR] exception raised while instantiating the RPi. This "
+            +"is probably to pigpio daemon not running.\n\tTo start it, run "
+            +"'sudo pigpiod'")
     
     # Infinite loop to keep it running unless a KeyboardInterrupt is raised
     while True:

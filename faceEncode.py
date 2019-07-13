@@ -39,6 +39,11 @@ def main(dataset, encodings, detection_method):
     :param `encode_detection_method`: face detection model to use for 
     encodings: either `'hog'` or `'cnn'` (default: `'hog'`).
     '''
+    # Check if the input path for the dataser folder has "/" at the end, and
+    # remove it if does
+    if dataset[-1:] == "/":
+        dataset = dataset[:-1]
+
     # Grab the paths to the images of the dataset and count them
     print("[INFO] quantifying faces...", end=" ")
     imagePaths = list(paths.list_images(dataset))

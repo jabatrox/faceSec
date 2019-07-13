@@ -12,6 +12,7 @@ import schedule
 import time
 import sys
 import logging
+import base64
 
 # from authlib.client import OAuth2Session
 # import google.oauth2.credentials
@@ -29,13 +30,16 @@ import google_auth
 
 # Construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
-ap.add_argument("-i", "--dataset", default="images/known_people",
+ap.add_argument("-i", "--dataset",  type=str, default="images/known_people",
     help="path to input directory of face images.\ndefault: "+
         "'images/known_people'")
+ap.add_argument("-u", "--unknown",  type=str, default="images/unknown_people",
+    help="path to output directory of unknown face images.\ndefault: "+
+        "'images/unknown_people'")
 ap.add_argument("-e", "--encodings", type=str, default="encodings.pickle",
     help="path to serialized db of facial encodings "+
         "\ndefault: 'encodings.pickle'")
-ap.add_argument("-u", "--encodings-update-time", type=str, default="01:00:00",
+ap.add_argument("-t", "--encodings-update-time", type=str, default="01:00:00",
     help="time when the encoding will be updated daily "+
         "\ndefault: '01:00:00'")
 ap.add_argument("-d", "--encode-detection-method", type=str, default="hog",
@@ -80,6 +84,8 @@ log.setLevel(logging.ERROR)
 
 # Some basic variables
 received_card_number = ""   # Empty string to store the card number received
+received_card_event = threading.Event() # Event for when a card number is
+                                        # received
 granted_cards = accessmanager.getAllGrantedCardIDs()# List of cards allowed
 # granted_CWIDs = accessmanager.getAllGrantedCWIDs()  # List of CWIDs allowed
 admin_users = accessmanager.getAllAdminIDs()        # List of admin Google IDs
@@ -87,7 +93,7 @@ admin_users = accessmanager.getAllAdminIDs()        # List of admin Google IDs
 
 # Create the videoCamera object with the parsed arguments
 if not args["local"]:
-    videoCamera = faceRecon.VideoCamera(args["encodings"],
+    videoCamera = faceRecon.VideoCamera(args["unknown"], args["encodings"],
                 args["recon_detection_method"], int(args["count_recon"]))
     videoCam_started = False
 
@@ -146,7 +152,8 @@ def launchUpdateEncodings():
         print("\nKeyboardInterrupt: stopping encodings update process and "
             +"ending...", end=" ")
         schedule.clear()
-        print("[DONE]")
+        print("DONE")
+        print("PROGRAM KILLED")
 
 
 def updateEncodings(dataset, encodings, encode_detection_method):
@@ -278,8 +285,13 @@ def getCardNumber():
 
     :return The `card number`.
     '''
-    card = input("Insert card number: ")
-    return card
+    global received_card_number
+    while True:
+        # If a card number has been received (flag set to True), clear the
+        # flag and return the card number
+        if received_card_event.isSet():
+            received_card_event.clear()
+            return received_card_number
 
 
 def waitForCard():
@@ -291,7 +303,6 @@ def waitForCard():
     while True:
         global received_card_number
         received_card_number = getCardNumber()
-        # received_card_number = "1234"
         if received_card_number not in granted_cards:
             print("[ERROR] swiped card is not on the DB")
             print("[FAIL] access refused\n")
@@ -309,7 +320,7 @@ def waitForCard():
             # myindexes = [i for (i, cwid) in enumerate(granted) if cwid == received_CWID]
             if received_CWID in granted:
                 print("[SUCCESS] face recognition and swiped card match")
-                print("[SUCCESS] access granted. You can now enter the lab\n")
+                print("[SUCCESS] [ACCESS GRANTED] you can now enter the lab\n")
                 accessmanager.setGrantedLastAccess(received_card_number, 
                     datetime.now())
                 accesslog(received_card_number, True, True, True)
@@ -336,13 +347,56 @@ def shutdown_server():
     func()
 
 
-@app.route("/")#, methods=['GET', 'POST'])
+@app.route("/")
 def index():
+    '''
+    Main landing page for a non-logged in user.
+    '''
     return render_template('index.html')
+
+
+@app.route("/", methods=['POST'])
+def receiveCardData():
+    '''
+    Receive data from the Raspberry Pi containing the information from card
+    that the user has swiped on the reader..
+    '''
+    global received_card_number
+    # Wait for a JSON in the request
+    if request.is_json:
+        # Get the JSON and obtain the data in bits
+        data = request.get_json()
+        cardID_encoded = data.get('cardID', None)
+        facilityCode_encoded = data.get('facilityCode', None)
+        cardCode_encoded = data.get('cardCode', None)
+
+        # Decode the data and get the string of bits
+        received_card_number = base64.b64decode(cardID_encoded).decode()
+        facilityCode = base64.b64decode(facilityCode_encoded).decode()
+        cardCode = base64.b64decode(cardCode_encoded).decode()
+
+        infoMessage = "[INFO] swiped card with:\n"\
+            f"\tID = {received_card_number}\n"\
+            f"\tFC = {facilityCode}\n"\
+            f"\tCC = {cardCode}"
+        print(infoMessage)
+
+        # Set the received_card_event flag to True, so the card number is sent
+        # to the waitForCard() function
+        received_card_event.set()
+        return Response('{"result": "ok"}', mimetype='application/json')
+    else:
+        print("Nothing received")
+        return Response('{"result": "error", "error": "JSON not found"}',
+            status=500, mimetype='application/json')
 
 
 @app.route("/admin/", methods=['GET', 'POST'])
 def admin():
+    '''
+    Admin page, handling the button's requests. Only loads if the user is
+    identified, otherwise it redirects to "/".
+    '''
     if google_auth.is_logged_in():
         # Get information from the user logged in
         user_info = google_auth.get_user_info()
@@ -413,7 +467,7 @@ def admin():
                             +"before exiting...", end=" ")
                         encodings_process.terminate()
                         time.sleep(0.1)
-                        print("[DONE]")
+                        print("DONE")
                     print("[FINISHED] program existing")
                     shutdown_server()
                     return '<h3>Server shutted down</h3>'
@@ -523,7 +577,7 @@ if __name__ == "__main__":
                             +"exiting...", end=" ")
                         encodings_process.terminate()
                         time.sleep(0.1)
-                        print("[DONE]")
+                        print("DONE")
                     break
                 elif key == ord("f"):
                     updateEncodings(args["dataset"], args["encodings"],
