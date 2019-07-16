@@ -16,6 +16,14 @@ import json
 import requests
 import argparse
 
+## To disable the warning the following warning due to a self-signed certificate
+################## TO BE CORRECTED ##################
+# InsecureRequestWarning: Unverified HTTPS request is being made. Adding certificate
+# verification is strongly advised.
+# See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warningsInsecureRequestWarning)
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
 class decoder:
     '''
     A class to read Wiegand codes of an arbitrary length.
