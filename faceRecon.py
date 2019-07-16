@@ -45,15 +45,18 @@ known_count = {}        # Dictionnary to count the number of times each known
                         # before granting access
 unknown_count = 0       # Number of times an unknown subject is detected
 unknown_count_max = 15  # Max number of pictures taken of an unknown subject
+unknown_max_reached = False # Boolean: 
 granted = []            # List of subject with granted access
 grantedCWIDs = []       # List of the CWIDs from subject with granted access
 now = datetime.now()    # For the unknown folder path name
 maxElapsedTime = 15     # Max number of seconds with recognition mode on
 
 def startup():
-    global known_count, unknown_count, granted, grantedCWIDs, now
+    global known_count, unknown_count, unknown_max_reached
+    global granted, grantedCWIDs, now
     known_count = {}
     unknown_count = 0
+    unknown_max_reached = False
     granted = []
     grantedCWIDs = [] 
     now = datetime.now()
@@ -83,11 +86,11 @@ class VideoCamera(object):
         # self.video_stream = cv2.VideoCapture(0)
 
         # Check if the input path for the dataser folder has "/" at the end, and
-        # remove it if does
+        # add it if doesn't
         if pathToUnknown[-1:] == "/":
-            self.pathToUnknown = pathToUnknown[:-1]
-        else:
             self.pathToUnknown = pathToUnknown
+        else:
+            self.pathToUnknown = pathToUnknown + "/"
         self.encodings = encodings
         self.detection_method = detection_method
         self.known_count_max = known_count_max
@@ -124,6 +127,9 @@ class VideoCamera(object):
     def get_frame(self):
         # Read a frame from the camera
         frame = self.read()
+        if frame is None:
+            raise ValueError("[ERROR] camera could not be read. Please check "
+                +"if it's accesible")
 
         # If program is on recognition mode (self.doRecon is set to True),
         # process the frame to detect and recognize faces
@@ -175,30 +181,6 @@ class VideoCamera(object):
             matches = face_recognition.compare_faces(self.known_encodings["encodings"],
                 encoding, tolerance=0.55)
             name = "Unknown"
-            # matches_06 = face_recognition.compare_faces(known_encodings["encodings"],
-            #     encoding)
-            # distances = face_recognition.face_distance(known_encodings["encodings"],
-            #     encoding)
-            # index_match = [k for k,v in enumerate(matches) if v == True]
-            # index_match_06 = [k for k,v in enumerate(matches) if v == True]
-            # distances_match_06 = [k for k,v in enumerate(distances) if v <= 0.60]
-            # distances_match_055 = [k for k,v in enumerate(distances) if v <= 0.55]
-            # print("-"*20)
-            # print("index_match = ", end='')
-            # print(index_match)
-            # print("index_match_06 = ", end='')
-            # print(index_match_06)
-            # print("distances = ", end='')
-            # print(distances)
-            # print("distances_match_06 = ", end='')
-            # print(distances_match_06)
-            # print("distances_match_055 = ", end='')
-            # print(distances_match_055)
-            # print("matches = ", end='')
-            # print(matches)
-            # print("matches_06 = ", end='')
-            # print(matches_06)
-            # print("-"*20)
 
             # Check to see if we have found a match
             if True in matches:
@@ -228,15 +210,14 @@ class VideoCamera(object):
                 else:
                     known_count[name] = 1
 
-            # If there is any unknow subject, start taking pictures of it, by
+            # If there is any unknown subject, start taking pictures of it, by
             # saving each frame in which he/she is in, within a folder with
             # the following path:
             # '%pathToUnknown%/[currentDate]/[currentTimestamp]'
             # Ex: 'images\unknown_people\2019-06-25\105122.890024
             elif name == "Unknown" and unknown_count < unknown_count_max:
                 todayFolder = self.pathToUnknown + now.strftime("%Y-%m-%d")
-                # If folder for current date (today) doesn't exit, create
-                # it
+                # If folder for current date (today) doesn't exit, create it
                 if not os.path.exists(todayFolder):
                     os.makedirs(todayFolder)
                     print(f"[INFO] folder for day {todayFolder[-10:]} created. "
@@ -293,7 +274,7 @@ def accessControl(detection_method, known_count_max):
     from the live recognition module.
     '''
     # Pickup global variables
-    global known_count, unknown_count, unknown_count_max
+    global known_count, unknown_count, unknown_count_max, unknown_max_reached
     global granted, grantedCWIDs, maxElapsedTime
 
     if detection_method == "cnn":                   # Lower value since CNN is
@@ -306,9 +287,10 @@ def accessControl(detection_method, known_count_max):
     # Loop over frames from the video stream for up to `maxElapsedTime`
     # seconds
     while elapsedTime < maxElapsedTime:
-        if unknown_count == unknown_count_max:
+        if unknown_count == unknown_count_max and not unknown_max_reached:
             print("[WARNING] %s pictures taken from an unknow subject."
                 % unknown_count_max)
+            unknown_max_reached = True
         
         # If the dictionary of known face recognized is has keys (names), and
         # any of them has reached a count of 5, grant access to that subject
@@ -365,7 +347,7 @@ def main(encodings, display, detection_method, known_count_max):
     # process_this_frame = True
 
     # Pickup global variables and reset them
-    global known_count, unknown_count, unknown_count_max
+    global known_count, unknown_count, unknown_count_max, unknown_max_reached
     global granted, grantedCWIDs, maxElapsedTime
     startup()
     if detection_method == "cnn":                   # Lower value since CNN is
@@ -397,10 +379,11 @@ def main(encodings, display, detection_method, known_count_max):
             if key == ord("q"):
                 break
 
-        if unknown_count == unknown_count_max:
-            print("[INFO] %s pictures taken from an unknow subject. Exiting."
+        global unknown_max_reached
+        if unknown_count == unknown_count_max and not unknown_max_reached:
+            print("[INFO] %s pictures taken from an unknow subject."
                 % unknown_count_max)
-            break
+            unknown_max_reached = True
         
         # If the dictionary of known face recognized is has keys (names), and
         # any of them has reached a count of 5, grant access to that subject

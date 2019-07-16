@@ -124,11 +124,13 @@ class updateWelcomeThread(Thread):
                     "the camera for face recognition"
             if thread_display_name.isSet():
                 socketio.emit('newMessage', {'message': msg})
-                thread_display_name.clear()
+                # thread_display_name.clear()
 
             # Restore to default messsage when live recon is finised
-            if videoCamera.doRecon:
-                thread_display_name.set()
+            if not videoCamera.doRecon:
+                thread_display_name.clear()
+            # if videoCamera.doRecon:
+            #     thread_display_name.set()
             time.sleep(self.delay)
     def run(self):
         self.updateWelcomeGenerator()
@@ -217,7 +219,8 @@ def liveFaceRecon(encodings, display, recon_detection_method, count_recon):
     print("-"*60)
     print("Live recognition starting...")
     print("[INFO] encodings input path: '%s'" % encodings)
-    print("[INFO] display frame: '%s'" % display)
+    if args["local"]:
+        print("[INFO] display frame: '%s'" % display)
     print("[INFO] face detection method: '%s'" % recon_detection_method)
     print("[INFO] times before recognition success (for HOG): '%s'" % count_recon)
 
@@ -504,7 +507,11 @@ def gen(camera):
         :param camera: the videoCamera object
     '''
     while True:
-        frame = camera.get_frame()
+        try:
+            frame = camera.get_frame()
+        except ValueError as error:
+            print(error)
+            break
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
