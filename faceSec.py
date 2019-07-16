@@ -305,7 +305,10 @@ def waitForCard():
     time.sleep(5) # Delay for the encodings update process to start
     while True:
         global received_card_number
-        received_card_number = getCardNumber()
+        if args["local"]:
+            received_card_number = input("Insert card number: ")
+        else:
+            received_card_number = getCardNumber()
         if received_card_number not in granted_cards:
             print("[ERROR] swiped card is not on the DB")
             print("[FAIL] access refused\n")

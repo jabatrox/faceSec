@@ -354,7 +354,8 @@ def main(encodings, display, detection_method, known_count_max):
         known_count_max = int(known_count_max/2)    # slower but more accurate
 
     videoCam_started = False
-    videoCamera = VideoCamera(encodings, detection_method, known_count_max)
+    videoCamera = VideoCamera("images/unknown_people/", encodings,
+        detection_method, known_count_max, True)
     if not videoCam_started:
         videoCam_started = True
         videoCamera.start()
