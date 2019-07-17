@@ -12,7 +12,7 @@ OAuth2.txt
 
 ## Files ignored for security
 # Image folders
-images/known_people/*
+images/known_people/*/*
 !images/known_people/A00000003_Test_Tester/.gitkeep
 images/unknown_people/*
 !images/unknown_people/.gitkeep
