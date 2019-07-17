@@ -1,16 +1,29 @@
 .git/
 .vscode/
 __pycache__/
+
+# Personal files
 Temp/
-images/unknown_people/*
-!images/unknown_people/.gitkeep
 Testing pictures/
 pi-face-recognition/
+wiegand_py.zip
+haarcascade_frontalface_default.xml
+OAuth2.txt
+
+## Files ignored for security
+# Image folders
+images/known_people/*
+!images/known_people/A00000003_Test_Tester/.gitkeep
+images/unknown_people/*
+!images/unknown_people/.gitkeep
+
+# Cerfiticates for HTTPS
 certificates/*
 !certificates/.gitkeep
-OAuth2.txt
+
+# Authentication files
 google_auth.json
 access.json
-haarcascade_frontalface_default.xml
+
+# Access logging file
 accesslog.txt
-wiegand_py.zip
