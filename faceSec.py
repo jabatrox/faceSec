@@ -120,8 +120,8 @@ class updateWelcomeThread(Thread):
             # Update name only if it has changed (someone has swiped the card)
             if received_card_number in granted_cards:
                 name = accessmanager.getGrantedName(received_card_number)
-                msg = f"Hello {name}! Please now place yourself in front of "\
-                    "the camera for face recognition"
+                msg = f"Hello {name}!<br/>Please now place yourself in front of "\
+                    "the camera for face recognition."
             if thread_display_name.isSet():
                 socketio.emit('newMessage', {'message': msg})
                 # thread_display_name.clear()
