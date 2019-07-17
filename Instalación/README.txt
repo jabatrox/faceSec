@@ -11,12 +11,9 @@ conda install -c conda-forge dlib
 conda install pip
 pip install opencv-contrib-python
 pip install dlib-19.17.0-cp36-cp36m-win_amd64.whl
-pip install face_recognition
-pip install imutils
-pip install schedule
-pip install flask
-pip install Flask-SocketIO
-pip install gooey
+pip install -r requirements.txt
+Modules in requirements file:
+face_recognition, imutils, schedule, flask, Flask-SocketIO, gooey, authlib, google-api-python-client, google-auth
 
 4) Open Visual Studio Code, and select the "Python 3.6.7 64-bit ('base': conda)" run environment
 
