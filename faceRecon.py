@@ -19,24 +19,14 @@ from gooey import Gooey, GooeyParser
 import cv2
 import face_recognition
 import argparse
-import threading
 import os
 import sys
 import pickle
 import time
 import imutils
 
-# This program includes some basic performance tweaks to make things run a lot faster:
-#   1. Process each video frame at 1/4 resolution (though still display it at full resolution)
-#   2. Only detect faces in every other frame of video.
-
-# PLEASE NOTE: This program requires OpenCV (the `cv2` library) to be installed only to read from your webcam.
-# OpenCV is *not* required to use the face_recognition library.
 
 # Initialize some variables
-# face_locations = []
-# face_encodings = []
-# face_names = []
 # process_this_frame = True
 # pathToUnknown = "images/unknown_people/"
 known_count = {}        # Dictionnary to count the number of times each known
@@ -69,8 +59,8 @@ class VideoCamera(object):
     :param `recon_detection_method`: face detection model to use for live 
     recognition: either `'hog'` or `'cnn'`.\n
     :param `known_count_max`: number of times a subject must be recogised 
-    before granting access while using `'hog'` detection method (half of if is 
-    used for `'cnn'` (default: `15`).\n
+    before granting access while using `'hog'` detection method (the number is
+    halved if `'cnn'` is used) (default: `15`).\n
     :param `doRecon`: whether or not to the program is on recognition mode 
     (and frames should be processed) (default: `False`).\n
     '''
@@ -122,6 +112,20 @@ class VideoCamera(object):
             # Does not exist or no read permissions for the encodings file
             print("\n[ERROR] Unable to open file")
             sys.exit(1)
+            # import faceSec, faceEncode, multiprocessing
+            # no_encodings_process = multiprocessing.Process(
+            #     name='Encodings',
+            #     target = faceEncode.main,
+            #     args=(faceSec.args["dataset"], faceSec.args["encodings"],
+            #         faceSec.args["encode_detection_method"]))
+            # no_encodings_process.daemon = True
+            # no_encodings_process.start()
+            # no_encodings_process.join()
+            # faceEncode.main(faceSec.args["dataset"],
+            #     faceSec.args["encodings"], 
+            #     faceSec.args["encode_detection_method"])
+            # time.sleep(1)
+            # faceSec.videoCamera.encodings = faceSec.args["encodings"]
         self.known_encodings = pickle.loads(open(self.encodings, "rb").read())
     
     def get_frame(self):
@@ -246,8 +250,8 @@ class VideoCamera(object):
             left = int(left * r)
 
             # Draw the recognized face name on the image. The name displayed
-            # is the name of the folder without the last 10 characters (the
-            # CWID)
+            # is the name of the folder without the first 10 characters (the
+            # CWID and the underscore)
             cv2.rectangle(frame, (left, top), (right, bottom),
                 (0, 255, 0), 2)
             y = top - 15 if top - 15 > 15 else top + 15
@@ -258,27 +262,35 @@ class VideoCamera(object):
         return frame
 
 
-def accessControl(detection_method, known_count_max):
+# def accessControl(detection_method, known_count_max):
+def accessControl(videoCamera):
+    # :param `detection_method`: face detection model that is being used during  
+    # the live recognition process: either `'hog'` or `'cnn'`. If it's `cnn`, 
+    # the `known_count_max` will be divided by 2 to speed up the process.\n
+    # :param `known_count_max`: number of times a subject must be recogised 
+    # before granting access while using `'hog'` detection method (half of if is 
+    # used for `'cnn'`).\n
     '''
     Keep count of the known and unknown subject in the frames, and returns the
-    the list of the ones having access once the desired `known_count_max` is 
-    reached.
+    list of the ones having access once the desired `known_count_max` is
+    reached. If the face detection model is `cnn`, the `known_count_max` 
+    paramenter is divided by 2 to speed up the process.
 
-    :param `detection_method`: face detection model that is being used during  
-    the live recognition process: either `'hog'` or `'cnn'`. If it's `cnn`, 
-    the `known_count_max` will be divided by 2 to speed up the process.\n
-    :param `known_count_max`: number of times a subject must be recogised 
-    before granting access while using `'hog'` detection method (half of if is 
-    used for `'cnn'`).\n
-    :return The list of `granted CWIDs` of the recognized subjects received 
-    from the live recognition module.
+    :param `videoCamera`: the VideoCamera type object.\n
+    :return The list of `granted CWIDs` of the subjects that have been
+    recognized `known_count_max` or more times during the live recognition
+    phase.
     '''
     # Pickup global variables
     global known_count, unknown_count, unknown_count_max, unknown_max_reached
     global granted, grantedCWIDs, maxElapsedTime
 
-    if detection_method == "cnn":                   # Lower value since CNN is
-        known_count_max = int(known_count_max/2)    # slower but more accurate
+    # Lower value since CNN is slower
+    if videoCamera.detection_method == "cnn":
+        videoCamera.known_count_max = int(known_count_max/2)
+
+    # Start the facial recognition (the processing of the frames)
+    videoCamera.doRecon = True
 
     # Start the time counter
     startTime = datetime.now()
@@ -296,7 +308,7 @@ def accessControl(detection_method, known_count_max):
         # any of them has reached a count of 5, grant access to that subject
         if bool(known_count):
             granted = [k for k,v in known_count.items()
-                if float(v) == known_count_max]
+                if float(v) == videoCamera.known_count_max]
             if granted:
                 for subject in granted:
                     subject_name = subject[10:].replace("_", " ")
@@ -308,6 +320,9 @@ def accessControl(detection_method, known_count_max):
         
         # Update the elapsed time it has been running
         elapsedTime = (datetime.now() - startTime).total_seconds()
+    
+    # Stop the facial recognition (the processing of the frames)
+    videoCamera.doRecon = False
     
     # Return the list of granted subjects
     if not granted:
@@ -334,25 +349,24 @@ def main(encodings, display, detection_method, known_count_max):
     :param `recon_detection_method`: face detection model to use for live 
     recognition: either `'hog'` or `'cnn'` (default: `'hog'`).\n
     :param `known_count_max`: number of times a subject must be recogised 
-    before granting access while using `'hog'` detection method (half of if is 
-    used for `'cnn'` (default: `15`).\n
-    :return The list of `granted` subject received from the live recognition 
-    module
+    before granting access while using `'hog'` detection method (the number is
+    halved if `'cnn'` is used) (default: `15`).\n
+    :return The list of `granted CWIDs` of the subjects that have been
+    recognized `known_count_max` or more times during the live recognition
+    phase.
     '''
-
-    # Initialize some variables
-    # face_locations = []
-    # face_encodings = []
-    # face_names = []
-    # process_this_frame = True
 
     # Pickup global variables and reset them
     global known_count, unknown_count, unknown_count_max, unknown_max_reached
     global granted, grantedCWIDs, maxElapsedTime
     startup()
-    if detection_method == "cnn":                   # Lower value since CNN is
-        known_count_max = int(known_count_max/2)    # slower but more accurate
 
+    # Lower value since CNN is slower
+    if detection_method == "cnn":                   
+        known_count_max = int(known_count_max/2)
+
+    # Initialize some variables
+    # process_this_frame = True
     videoCam_started = False
     videoCamera = VideoCamera("images/unknown_people/", encodings,
         detection_method, known_count_max, True)
@@ -428,9 +442,6 @@ def argParser():
     ap.add_argument("-u", "--unknown",  type=str, default="images/unknown_people",
         help="path to output directory of unknown face images.\ndefault: "+
         "'images/unknown_people'")
-    ap.add_argument("-y", "--display", type=int, default=1,
-        help="whether or not to display output frame to screen during live "+
-        "recognition\ndefault: `1` (yes)")
     ap.add_argument("-d", "--detection-method", type=str, default="hog",
         help="face detection model to use: either `hog` or `cnn`"+
         "\ndefault: 'hog'")
@@ -438,6 +449,9 @@ def argParser():
         help="number of times a subject must be recogised before granting "+
         "access while using `hog` detection method (it will auto calculate "+
         "it for `cnn`. Test to adjust manually\ndefault: 15")
+    ap.add_argument("-Y", "--display", type=int, default=1,
+        help="whether or not to display output frame to screen during live "+
+        "recognition\ndefault: `1` (yes)")
     global args
     args = vars(ap.parse_args())
     return args

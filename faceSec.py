@@ -50,15 +50,15 @@ ap.add_argument("-r", "--recon-detection-method", type=str, default="hog",
         "or 'cnn'\ndefault: 'hog'")
 ap.add_argument("-c", "--count-recon", type=int, default=15,
         help="number of times a subject must be recogised before granting "+
-        "access while using `hog` detection method (it will auto calculate "+
-        "it for `cnn`. Test to adjust manually\ndefault: 15")
+        "access while using `hog` detection method (it will be halved for "+
+        "`cnn`. Test to adjust manually\ndefault: 15")
 ap.add_argument("-L", "--local", type=int, default=0,
     help="whether or not to run the script in local computer (without web "+
         "server).\ndefault: '0' (no)")
 ap.add_argument("-Y", "--display", type=int, default=1,
     help="whether or not to display output frame to screen during live "+
-        "recognition. Used when the script is run in local (see option '-L')"+
-        "\ndefault: '1' (yes)")
+        "recognition. Used when the script is run in local mode (see option "+
+        "'-L')\ndefault: '1' (yes)")
 args = vars(ap.parse_args())
 
 
@@ -110,7 +110,7 @@ class updateWelcomeThread(Thread):
     otherwise it shows "Waiting for user...".
     '''
     def __init__(self):
-        self.delay = 1
+        self.delay = 1 # delay between the checks for new received messages
         super(updateWelcomeThread, self).__init__()
     def updateWelcomeGenerator(self):
         while True:
@@ -195,7 +195,8 @@ def updateEncodings(dataset, encodings, encode_detection_method):
 
     if not args["local"]:
         # Force reload of the encodings in the videoCamera object
-        videoCamera.load_encodings()
+        videoCamera.encodings = args["encodings"]
+        # videoCamera.load_encodings()
     print("-"*60)
 
 
@@ -209,6 +210,9 @@ def liveFaceRecon(encodings, display, recon_detection_method, count_recon):
     live recognition (default: `1` (yes)).\n
     :param `recon_detection_method`: face detection model to use for live 
     recognition: either `'hog'` or `'cnn'` (default: `'hog'`).\n
+    :param `count_recon`: number of times a subject must be recogised before
+    granting access while using `'hog'` detection method (the number is halved
+    if `'cnn'` is used) (default: `15`).\n
     :return The list of `granted` subject received from the live recognition 
     module
     '''
@@ -227,16 +231,16 @@ def liveFaceRecon(encodings, display, recon_detection_method, count_recon):
     if not args["local"]:
         # Reset faceRecon variables to default and start facial recognition
         faceRecon.startup()
-        videoCamera.doRecon = True
         # Check for recognized subject, return the list of the ones having access
         # granted, and stop facial recognition
-        granted = faceRecon.accessControl(videoCamera.detection_method, 
-            videoCamera.known_count_max)
-        videoCamera.doRecon = False
+        # videoCamera.doRecon = True
+        # granted = faceRecon.accessControl(videoCamera.detection_method, 
+        #     videoCamera.known_count_max)
+        granted = faceRecon.accessControl(videoCamera)
+        # videoCamera.doRecon = False
     else: # Running in local
         granted = faceRecon.main(encodings, display, recon_detection_method,
             count_recon)
-    # granted = ['Javier_Soler_Macias_A20432537']
     print("-"*60)
     return granted
 
@@ -311,7 +315,7 @@ def waitForCard():
             received_card_number = getCardNumber()
         if received_card_number not in granted_cards:
             print("[ERROR] swiped card is not on the DB")
-            print("[FAIL] access refused\n")
+            print("[FAIL] [ACCESS REFUSED]\n")
             accesslog(received_card_number, False, False, False)
         else:
             # Trigger the tread event to show the name of the person who
@@ -332,16 +336,16 @@ def waitForCard():
                 accesslog(received_card_number, True, True, True)
             elif granted and not received_CWID in granted:
                 print("[ERROR] face recognition and swiped card don't match!")
-                print("[FAIL] access refused\n")
+                print("[FAIL] [ACCESS REFUSED]\n")
                 accesslog(received_card_number, True, True, False)
             elif not granted:
                 print("[ERROR] no known subject has been recognized")
-                print("[FAIL] access refused\n")
+                print("[FAIL] [ACCESS REFUSED]\n")
                 accesslog(received_card_number, True, False, False)
             received_card_number = ""
 
 
-################################ MAIN PROGRAM ################################
+############################### FLASK FUNCTIONS ##############################
 
 def shutdown_server():
     '''
@@ -364,12 +368,13 @@ def index():
 @app.route("/", methods=['POST'])
 def receiveCardData():
     '''
-    Receive data from the Raspberry Pi containing the information from card
-    that the user has swiped on the reader..
+    Receive data from the Raspberry Pi containing the information from the
+    card that the user has swiped on the reader.
     '''
-    global received_card_number
-    # Wait for a JSON in the request
-    if request.is_json:
+    global received_card_number, videoCamera
+    # Wait for a JSON in the request, and check if it's not already in
+    # recognition mode (i.e. if a known card hasn't already been swiped)
+    if request.is_json and not videoCamera.doRecon:
         # Get the JSON and obtain the data in bits
         data = request.get_json()
         cardID_encoded = data.get('cardID', None)
@@ -390,7 +395,15 @@ def receiveCardData():
         # Set the received_card_event flag to True, so the card number is sent
         # to the waitForCard() function
         received_card_event.set()
-        return Response('{"result": "ok"}', mimetype='application/json')
+        return Response('{"result": "ok", "error": ""}',
+            status=200, mimetype='application/json')
+    # If it's already in recognition mode, don't process the request (discard
+    # it)
+    elif videoCamera.doRecon:
+        print("[WARNING] recognition from previous card swipe is still in "
+            +"progress, please wait")
+        return Response('{"result": "ok", "error": ""}',
+            status=200, mimetype='application/json')
     else:
         print("Nothing received")
         return Response('{"result": "error", "error": "JSON not found"}',
@@ -485,9 +498,9 @@ def admin():
                 +f"'{user_info['id']}' tried to access administrator's site "
                 +f"on {datetime.now()}")
             flash("User not accepted (no admin rights)", 'danger')
-            return redirect('/google/logout')
+            return redirect('/google/logout', code=302)
     flash("User not logged in. Please login to access administrator's site", 'danger')
-    return redirect('/')
+    return redirect('/', code=302)
 
 
 @socketio.on('newMessage')
@@ -521,10 +534,6 @@ def gen(camera):
 
 @app.route('/video_feed')
 def video_feed():
-    # global videoCamera #### A ELIMINAR SI NO FUNCIONA
-    # videoCamera = faceRecon.VideoCamera(args["encodings"],
-    #         args["recon_detection_method"], doRecon)
-    # if videoCamera.doRecon:
     global videoCam_started
     if not videoCam_started:
         videoCam_started = True
@@ -549,6 +558,9 @@ def add_header(r):
     # r.headers['X-XSS-Protection'] = '1; mode=block'
     # r.headers['X-Content-Type-Options'] = 'nosniff'
     return r
+
+
+################################ MAIN PROGRAM ################################
 
 if __name__ == "__main__":
     # Logging config
@@ -610,8 +622,10 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt:
         print("KeyboardInterrupt: main loop interrupted")
+        # Destray cv2 windows (if script is run in local)
         if args["local"]:
-            cv2.destroyAllWindows()
+            cv2.destroyAllWindows()ç
+        # Terminate encodings process and exit
         encodings_process.terminate()
         time.sleep(0.1)
         sys.exit(1)

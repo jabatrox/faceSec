@@ -1,3 +1,16 @@
+'''
+Google authentication via Google OAuth2.
+
+Original script from Matt Button:
+https://www.mattbutton.com/2019/01/05/google-authentication-with-python-and-flask
+https://github.com/mattbutton/google-authentication-with-python-and-flask
+
+Some modifications:
+    - Variables loaded from the myenv.py module (not environment variables)
+    - HOME_URI: to redirect after logout.
+    - LOGIN_URI: to redirect to after the login.
+'''
+
 import functools
 import os
 

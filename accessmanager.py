@@ -1,5 +1,35 @@
+'''
+Reads and writes from the access.json file, containing the database of admin
+users and of granted users (authorized to access).
+
+The JSON file has the following format, and any new user/admin should be
+added accordingly:
+{
+	"admins": [
+		{
+			"googleID": "",
+			"last-access-human": "",
+			"last-access-timestamp": "",
+			"name": ""
+		}
+	],
+	"granted": [
+		{
+			"CWID": "",
+			"cardCode": "",
+			"cardID": "",
+			"facilityCode": "",
+			"last-access-human": "",
+			"last-access-timestamp": "",
+			"name": ""
+		}
+	]
+}
+'''
+
 import json
 from datetime import datetime
+
 
 def loadJsonAccessFile(accessFile):
     '''

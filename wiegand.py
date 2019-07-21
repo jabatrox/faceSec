@@ -8,7 +8,7 @@ https://abyz.me.uk/rpi/pigpio/python.html
 '''
 
 from argparse import RawTextHelpFormatter
-from gooey import Gooey
+from gooey import Gooey, GooeyParser
 import sys
 import pigpio
 import base64
@@ -16,8 +16,9 @@ import json
 import requests
 import argparse
 
-## To disable the warning the following warning due to a self-signed certificate
-################## TO BE CORRECTED ##################
+## To disable the warning the following warning due to a self-signed
+## certificate that is running on localhost (so the common names don't match
+## between localhost and the input IP)
 # InsecureRequestWarning: Unverified HTTPS request is being made. Adding certificate
 # verification is strongly advised.
 # See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warningsInsecureRequestWarning)
@@ -40,7 +41,7 @@ class decoder:
             print(f"bitCount={bitCount}, value={value}, cardBits={cardBits}")
 
         pi = pigpio.pi()
-        wiegand_card = wiegand.decoder(pi, 14, 15, callback)
+        wiegand_card = wiegand.decoder(pi, 14, 15, processCodeCallback)
         time.sleep(300)
         wiegand_card.cancel()
         pi.stop()
@@ -119,7 +120,7 @@ class decoder:
         self.cb_1.cancel()
 
 
-def processCode(bitCount, value, cardID_bits):
+def processCodeCallback(bitCount, value, cardID_bits):
     global facilityCode, cardCode
     # Clean values from previous card reading
     facilityCode = 0
@@ -158,6 +159,8 @@ def sendRequest(cardID_bits, facilityCode, cardCode):
     ipaddr = args["address"]
     port = str(args["port"])
     url = "https://" + ipaddr + ":" + port
+    ## For future use, with valid certificates (not localhost)
+    # verify = args["certificates"]
     # Payload to send in JSON format
     payload = {
         "cardID": cardID_bits_bytes.decode(),
@@ -166,21 +169,26 @@ def sendRequest(cardID_bits, facilityCode, cardCode):
         }
     print("Sending HTTP request...", end = " ")
     try:
-        r = requests.post(url, json=payload, verify=False)
-        print(r)
-    except ValueError:
+        r = requests.post(url, json=payload, verify=False, timeout=2)
+        print(f"{r.status_code} {r.json()['result']} {r.json()['error']}")
+    except requests.exceptions.RequestException as err:
         print("[ERROR] exception raised while sending POST request")
+        print(err)
     print("DONE")
 
 
 @Gooey(program_name="Face Recognition", image_dir='.')
 def argParser():
     # Construct the argument parser and parse the arguments
-    ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
+    ap = GooeyParser(formatter_class=RawTextHelpFormatter)
     ap.add_argument("-a", "--address", type=str, required=True,
         help="IP address of the server where the card details will be sent ")
     ap.add_argument("-p", "--port", type=int, required=True,
         help="port where the destination server is running")
+    ## For future use, with valid certificates (not localhost)
+    # ap.add_argument("-c", "--certificates", widget="FileChooser", type=str,
+    #     required=True,
+    #     help="input path to the certificates for the HTTPS connection")
     global args
     args = vars(ap.parse_args())
     return args
@@ -197,7 +205,7 @@ if __name__ == "__main__":
     # Start the Raspberry Pi and the decoding process
     try:
         pi = pigpio.pi()
-        wiegand_card = decoder(pi, 14, 15, processCode)
+        wiegand_card = decoder(pi, 14, 15, processCodeCallback)
     except ValueError:
         print("[ERROR] exception raised while instantiating the RPi. This "
             +"is probably to pigpio daemon not running.\n\tTo start it, run "

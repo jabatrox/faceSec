@@ -5,9 +5,19 @@ Retrieve the information needed for the app to work. This is:
 secret, and authorized redirect URI.
     - the home URI of the app (to redirect after logout).
     - the login URI of the app (to redirect to after the login).
+
+The JSON file has the following format:
+{
+    "auth_redirect_URI": "https://localhost:3000/google/auth",
+    "home_URI": "https://localhost:3000",
+    "id": "clientID.apps.googleusercontent.com",
+    "login_URI": "https://localhost:3000/admin",
+    "secret": "clientSecret"
+}
 '''
 
 import json
+
 
 def loadJsonEnvFile(envFile):
     '''

@@ -28,7 +28,8 @@ import argparse
 import os
 import pickle
 
-def main(dataset, encodings, detection_method):
+def main(dataset='images/known_people', encodings='encodings.pickle',
+    detection_method='hog'):
     '''
     Performs the encodings update.
 
