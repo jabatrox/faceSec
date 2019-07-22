@@ -195,8 +195,8 @@ def updateEncodings(dataset, encodings, encode_detection_method):
 
     if not args["local"]:
         # Force reload of the encodings in the videoCamera object
-        videoCamera.encodings = args["encodings"]
-        # videoCamera.load_encodings()
+        # videoCamera.encodings = args["encodings"]
+        videoCamera.load_encodings()
     print("-"*60)
 
 
@@ -624,7 +624,7 @@ if __name__ == "__main__":
         print("KeyboardInterrupt: main loop interrupted")
         # Destray cv2 windows (if script is run in local)
         if args["local"]:
-            cv2.destroyAllWindows()ç
+            cv2.destroyAllWindows()
         # Terminate encodings process and exit
         encodings_process.terminate()
         time.sleep(0.1)
