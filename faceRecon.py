@@ -75,7 +75,7 @@ class VideoCamera(object):
         ## and comment the second one
         # self.video_stream = cv2.VideoCapture(0)
 
-        # Check if the input path for the dataser folder has "/" at the end, and
+        # Check if the input path for the dataset folder has "/" at the end, and
         # add it if doesn't
         if pathToUnknown[-1:] == "/":
             self.pathToUnknown = pathToUnknown
@@ -106,7 +106,8 @@ class VideoCamera(object):
         # Load encodings from the known faces
         print("############### ENCODING RELOADED ###############")
         try:
-            with open(self.encodings) as file:
+            with open(self.encodings, "rb") as file:
+                # self.known_encodings = pickle.loads(file.read())
                 pass
         except IOError as e:
             # Does not exist or no read permissions for the encodings file

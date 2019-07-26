@@ -40,7 +40,7 @@ def main(dataset='images/known_people', encodings='encodings.pickle',
     :param `encode_detection_method`: face detection model to use for 
     encodings: either `'hog'` or `'cnn'` (default: `'hog'`).
     '''
-    # Check if the input path for the dataser folder has "/" at the end, and
+    # Check if the input path for the dataset folder has "/" at the end, and
     # remove it if does
     if dataset[-1:] == "/":
         dataset = dataset[:-1]
@@ -54,32 +54,35 @@ def main(dataset='images/known_people', encodings='encodings.pickle',
     known_face_encodings = []
     known_face_names = []
 
-    # Loop over the image paths
-    for (i, imagePath) in enumerate(imagePaths):
-        # Extract the person name from the image path
-        print("[INFO] processing image {}/{}...".format(i + 1,
-            len(imagePaths)), end=" ")
-        name = imagePath.split(os.path.sep)[-2]
+    if len(imagePaths) != 0:
+        # Loop over the image paths
+        for (i, imagePath) in enumerate(imagePaths):
+            # Extract the person name from the image path
+            print(f"[INFO] processing image {i + 1}/{len(imagePaths)}...", end=" ")
+            name = imagePath.split(os.path.sep)[-2]
 
-        # Load the input image and convert it from RGB (OpenCV ordering)
-        # to RGB (dlib ordering, which face_recognition uses)
-        image = cv2.imread(imagePath)
-        rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            # Load the input image and convert it from RGB (OpenCV ordering)
+            # to RGB (dlib ordering, which face_recognition uses)
+            image = cv2.imread(imagePath)
+            rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        # Detect the (x, y)-coordinates of the bounding face locations
-        # corresponding to each face in the input image, and then compute
-        # the facial embeddings for each face
-        face_locations = face_recognition.face_locations(rgb,
-            model=detection_method)
-        face_encodings = face_recognition.face_encodings(rgb, face_locations)
+            # Detect the (x, y)-coordinates of the bounding face locations
+            # corresponding to each face in the input image, and then compute
+            # the facial embeddings for each face
+            face_locations = face_recognition.face_locations(rgb,
+                model=detection_method)
+            face_encodings = face_recognition.face_encodings(rgb, face_locations)
 
-        # Loop over the encodings
-        for encoding in face_encodings:
-            # Add each encoding + name to the set of known names and
-            # encodings
-            known_face_encodings.append(encoding)
-            known_face_names.append(name)
-        print("DONE")
+            # Loop over the encodings
+            for encoding in face_encodings:
+                # Add each encoding + name to the set of known names and
+                # encodings
+                known_face_encodings.append(encoding)
+                known_face_names.append(name)
+            print("DONE")
+        else:
+            print("[INFO] dataset is empty, please check the input path. The "
+                +"program will run anyway")
 
     # Dump the facial encodings + names to disk
     print("[INFO] Serializing encodings...", end=" ")
