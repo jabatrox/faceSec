@@ -35,7 +35,7 @@ psutil==5.6.3             # via gooey
 pyasn1-modules==0.2.5     # via google-auth
 pyasn1==0.4.5             # via pyasn1-modules, rsa
 pycparser==2.19           # via cffi
-python-engineio==3.8.1    # via python-socketio
+python-engineio==3.8.2.post1    # via python-socketio
 python-socketio==4.1.0    # via flask-socketio
 requests==2.22.0          # via authlib
 rsa==4.0                  # via google-auth
