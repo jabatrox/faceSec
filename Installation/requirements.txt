@@ -11,7 +11,7 @@ certifi==2019.6.16        # via requests
 cffi==1.12.3              # via cryptography
 chardet==3.0.4            # via requests
 click==7.0                # via face-recognition, flask
-cryptography==2.7         # via authlib
+cryptography==3.3.2         # via authlib
 dlib==19.17.0
 face-recognition-models==0.3.0  # via face-recognition
 face-recognition==1.2.3
