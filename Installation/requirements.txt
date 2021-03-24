@@ -38,7 +38,7 @@ pycparser==2.19           # via cffi
 python-engineio==3.9.0    # via python-socketio
 python-socketio==4.1.0    # via flask-socketio
 requests==2.22.0          # via authlib
-rsa==4.0                  # via google-auth
+rsa==4.1                  # via google-auth
 schedule==0.6.0
 six==1.12.0               # via cryptography, google-api-python-client, google-auth, pathlib2, python-engineio, python-socketio, wxpython
 uritemplate==3.0.0        # via google-api-python-client
